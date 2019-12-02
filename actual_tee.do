@@ -495,6 +495,7 @@ marginsplot,recast(line) plotopts(lwidth(medthick)) recastci(rline) ciopts(lwidt
 
 
 /* Graphs two-way interaction */
+/*
 eststo: xi: logit c2_onset c.lfree_fair_elections_10##c.lhorizontal_constraint_narrow  decay_c2 llnpop200 llnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . , cl(gwno)
 qui margins, dydx(lfree_fair_elections_10) at(lhorizontal_constraint_narrow = (0(0.1)1))   
 marginsplot, recast(line) plotopts(lwidth(medthick)) recastci(rline) ciopts(lwidth(vthin) lpattern(longdash)) level(95) xlabel(0(.01)1)
@@ -531,7 +532,7 @@ intgph logit c2_onset decay_c2 llnpop200 llnGDPPerCapita200  ///
 *graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/vert_hor_int_sep.pdf", replace
 graph export "/Users/hannefjelde/Dropbox/Collaborations/V-DemCivilPeace/Figures/vert_hor_int_sep.pdf", replace
 
- 
+*/ 
  
  
  
