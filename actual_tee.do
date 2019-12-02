@@ -292,7 +292,7 @@ replace ff_change_pos=1 if ff_fd_pos>=0.1 & ff_fd_pos!=.
 /* ======================================================== */
 save "Tee/whole.dta", replace
 /* Inspecting decay variable */
-keep gwno year ff_fd ff_change free_fair_elections 
+keep gwno year ff_fd ff_change_neg ff_change_pos free_fair_elections 
 save "Tee/elections_change.dta", replace
 /* ========================= */
 use "Tee/whole.dta"
