@@ -322,7 +322,7 @@ replace t_aut_ff=0 if  t_aut_ff==. & ff_fd!=.
 /* ======================================================== */
 save "Tee/whole.dta", replace
 /* Inspecting decay variable */
-keep gwno year ff_fd ff_change free_fair_elections ff_pos_decay ff_neg_decay t_dem_ff t_aut_ff 
+keep gwno year ff_fd ff_change_neg ff_change_pos free_fair_elections ff_pos_decay ff_neg_decay t_dem_ff t_aut_ff 
 save "Tee/elections_change.dta", replace
 /* ========================= */
 use "Tee/whole.dta"
