@@ -1,22 +1,6 @@
 /* Master-file V-Dem civil peace */
 /* Last changed 040718 by HF */
 
-/*
-capture cd "C:/Users/havnyg/Dropbox/"
-capture cd "/Users/havard/Dropbox/"
-capture cd "/Users/efx/Dropbox"
-capture cd "/Users/havard/Dropbox"
-capture cd "C:/Users/efx/Dropbox"
-capture cd "C:/Users/havnyg/Dropbox"
-capture cd "~/Dropbox"
-capture cd "/Users/hannefjelde/Dropbox"
-
-cd "Collaborations/V-DemCivilPeace/"
-set scheme s1mono
-set more off
-*/
-
-
 /* Base everything on a copy of the masterdata from the FVP book project */
 
 use  "InputData/FVP_masterdata_copy.dta", clear
@@ -521,92 +505,18 @@ intgph logit c2_onset decay_c2 llnpop200 llnGDPPerCapita200 ///
 	ivars( lhorizontal_constraint_narrow lfree_fair_elections) cmdopts(r) difvals(.00066 .46464) ///
 	ytitle(Change in pr(y)) ///
 	gphopts(yline(0)) xinc(200)
-*graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/vert_hor_int_dif.pdf", replace
-graph export "/Users/hannefjelde/Dropbox/Collaborations/V-DemCivilPeace/Figures/vert_hor_int_dif.pdf", replace
+*graph export "../../Apps/ShareLaTex/Figures/vert_hor_int_dif.pdf", replace
+graph export "Figures/vert_hor_int_dif.pdf", replace
 
 intgph logit c2_onset decay_c2 llnpop200 llnGDPPerCapita200  ///
 	if year <= 2016 & year>1945 & lfree_fair_elections != . & lhorizontal_constraint_narrow != . ,  ///
 	ivars(lhorizontal_constraint_narrow lfree_fair_elections) cmdopts(r) gphdif difvals(.00066 .46464) ///
 	ytitle(Pr(y)) ///
 	gphopts(yline(0)) xinc(200)
-*graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/vert_hor_int_sep.pdf", replace
-graph export "/Users/hannefjelde/Dropbox/Collaborations/V-DemCivilPeace/Figures/vert_hor_int_sep.pdf", replace
+*graph export "Figures/vert_hor_int_sep.pdf", replace
+graph export "Figures/vert_hor_int_sep.pdf", replace
 
-*/ 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+/*
 ****
 * DV: coup - 46 and onwards (controlling for armed conflict) - what other control variables should we include? Military spending? 
 ****
@@ -625,11 +535,11 @@ outreg using tabcoup.doc, se var starlevels(10 5 1) sigsymbols(+,*,**) note (Rob
 *Model 4: horse-race
 logit coup_incl lfree_fair_elections lhorizontal_constraint_narrow l.minority_rep_narrow decay_coupincl lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
 outreg using tabcoup.doc, se var starlevels(10 5 1) sigsymbols(+,*,**) note (Robust standard errors clustered on country.) merge
-
+*/
 
 /* HF: do we want to construct an elite conflict variable - with coups + non-ethnic government conflicts for example*/ 
  
- 
+/* 
 **** 
 * DV: ethnic conflict (here we should perhaps do multinomial logit, but not sure what to do with DV with onsets during ongoing
 ****
@@ -657,7 +567,9 @@ outreg using tabethnic.doc, se var starlevels(10 5 1) sigsymbols(+,*,**) note (R
 *Model 4: horse-race
 logit onset_do_eth_flag lfree_fair_elections lhorizontal_constraint_narrow  l.minority_rep_narrow decay_eth l.incidence_noneth_flag lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
 logit onset_do_noneth_flag lfree_fair_elections lhorizontal_constraint_narrow  l.minority_rep_narrow decay_noeth l.incidence_eth_flag lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
+*/
 
+/*
 ***
 
 * Model 1 - vertical constraints
@@ -675,9 +587,9 @@ outreg using tabethnic_2.doc, se var starlevels(10 5 1) sigsymbols(+,*,**) note 
 *Model 4: horse-race
 mlogit ml_onset lfree_fair_elections lhorizontal_constraint_narrow  l.minority_rep_narrow  decay_ml_onset  lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
  outreg using tabethnic_2.doc, se var starlevels(10 5 1) sigsymbols(+,*,**) note (Robust standard errors clustered on country.) merge
-
+*/
  
- 
+/*
 **** 
 * DV: territorial versus government
 ****
@@ -705,9 +617,9 @@ outreg using tabterr.doc, se var starlevels(10 5 1) sigsymbols(+,*,**) note (Rob
 *Model 4: horse-race
 logit onset_do_terr_flag lfree_fair_elections lhorizontal_constraint_narrow  l.minority_rep_narrow decay_eth l.incidence_noneth_flag lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
 logit onset_do_gov_flag lfree_fair_elections lhorizontal_constraint_narrow  l.minority_rep_narrow decay_noeth l.incidence_eth_flag lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
+*/
 
-
-
+/*
 * In multinomial logit 
 * Model 1 - vertical constraints
 mlogit ml_onset_inc  lfree_fair_elections decay_ml_onset_inc  lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
@@ -720,9 +632,9 @@ mlogit ml_onset_inc  l.minority_rep_narrow  decay_ml_onset_inc lnpop200 lnGDPPer
  
 *Model 4: horse-race
 mlogit ml_onset_inc lfree_fair_elections lhorizontal_constraint_narrow  l.minority_rep_narrow  decay_ml_onset_inc  lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
-  
- 
- 
+*/ 
+
+/*
 ***************************************************************  
 * Models with interaction terms
 ***************************************************************
@@ -741,12 +653,13 @@ logit onset_do_flag l.min_hor_int  lhorizontal_constraint_narrow l.minority_rep_
  
 logit onset_do_flag l.min_hor_int lhorizontal_constraint_narrow l.minority_rep_narrow free_fair_elections decay lnpop200 lnGDPPerCapita200 if year <= 2016 & year>=1945 & free_fair_elections != . & horizontal_constraint_narrow != . & minority_rep_narrow != ., cl(gwno)
 
-
 by gwno: generate lhorizontal_constraint_narrow=l.horizontal_constraint_narrow
 by gwno: generate lminority_rep_narrow=l.minority_rep_narrow
 by gwno: generate lfree_fair_elections=lfree_fair_elections
+*/
  
 
+/*
  /* Electoral rights - horizontal constraints interaction */
 
 set more off
@@ -755,16 +668,16 @@ intgph logit onset_do_flag decay lnpop200 lnGDPPerCapita200 lminority_rep_narrow
 	ivars( horizontal_constraint_narrow free_fair_elections) cmdopts(r) difvals(0 .36) ///
 	ytitle(Electoral rights, change in predicted probability) ///
 	gphopts(yline(0)) xinc(200)
-*graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/vert_hor_int_dif.pdf", replace
-graph export "/Users/hannefjelde/Dropbox/Collaborations/V-DemCivilPeace/Figures/vert_hor_int_dif.pdf", replace
+*graph export "Figures/vert_hor_int_dif.pdf", replace
+graph export "Figures/vert_hor_int_dif.pdf", replace
 
 intgph logit onset_do_flag decay lnpop200 lnGDPPerCapita200 lminority_rep_narrow cowyear ///
 	if year <= 2016 & lfree_fair_elections != . & lhorizontal_constraint_narrow != . & lminority_rep_narrow != . ,  ///
 	ivars( lhorizontal_constraint_narrow lfree_fair_elections) cmdopts(r) gphdif difvals(0 .36) ///
 	ytitle(Electoral rights, predicted probability)  ///
 	gphopts(yline(0)) xinc(200)
-*graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/vert_hor_int_sep.pdf", replace
-graph export "/Users/hannefjelde/Dropbox/Collaborations/V-DemCivilPeace/Figures/vert_hor_int_sep.pdf", replace
+*graph export "Figures/vert_hor_int_sep.pdf", replace
+graph export "Figures/vert_hor_int_sep.pdf", replace
 
 
 /* Minority representation - horizontal constraints interaction */
@@ -774,51 +687,27 @@ intgph logit onset_do_flag decay lnpop200 lnGDPPerCapita200 lfree_fair_elections
 	ivars(lhorizontal_constraint minority_rep) cmdopts(r) difvals(-.14 1.14) ///
 	ytitle(Minority representation, change in predicted probability)  ///
 	gphopts(yline(0)) xinc(200)
-*graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/minor_hor_int_dif.pdf", replace
-graph export "/Users/hannefjelde/Dropbox/Collaborations/V-DemCivilPeace/Figures/minor_hor_int_dif.pdf", replace
+*graph export "Figures/minor_hor_int_dif.pdf", replace
+graph export "Figures/minor_hor_int_dif.pdf", replace
 
 
+/*
 intgph logit onset_do_flag decay lnpop200 lnGDPPerCapita200 lfree_fair_elections cowyear   ///
 	if year <= 2016 & lfree_fair_elections != . & lhorizontal_constraint_narrow != . & lminority_rep_narrow != .,  ///
 	ivars( lhorizontal_constraint_narrow lminority_rep_narrow) cmdopts(r) gphdif difvals(-.14 1.14) ///
 	ytitle(Minority representation, predicted probability)  ///
 	gphopts(yline(0)) xinc(200)
-*graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/minor_hor_int_sep.pdf", replace
-graph export "/Users/hannefjelde/Dropbox/Collaborations/V-DemCivilPeace/Figures/minor_hor_int_sep.pdf", replace
+*graph export "Figures/minor_hor_int_sep.pdf", replace
+graph export "Figures/minor_hor_int_sep.pdf", replace
+*/
+*/
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
 ************************************************************************************
 ************************************************************************************
 
 /* Logit and felogit models */
 
+/*
 *foreach model in logit fe re {
 set more off
 foreach model in logit fe re logit46 {
@@ -857,22 +746,20 @@ eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200  horizontal_cons
 eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections_narrow cowyear ///
 	if year <= 2016 & year >= `fy' & free_fair_elections_narrow != . & horizontal_constraint != . & minority_rep != ., `ptag'
 
+/*
 eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 minority_rep_narrow cowyear ///
 	if year <= 2016 & year >= `fy' & free_fair_elections != . & horizontal_constraint != . & minority_rep != ., `ptag'
 			
 			
 			}
+*/
+
 /* All together */	
-	
-	
-*eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 FHKN_RoL free_fair_elections  horizontal_constraint minority_rep cowyear   ///
-*	if year <= 2016 & year >= `fy' & free_fair_elections != . & horizontal_constraint != . & minority_rep != ., `ptag'
-	
 	
 eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections  horizontal_constraint minority_rep cowyear   ///
 	if year <= 2016 & year >= `fy' & free_fair_elections != . & horizontal_constraint != . & minority_rep != ., `ptag'
 
-esttab using "../../Apps/ShareLaTex/V-dem civil peace/Results/`model'_Models_Table1.tex", replace ///
+esttab using "./Results/`model'_Models_Table1.tex", replace ///
 	se nogaps stats(aic ll N)  ///
 	coeflabels(decay_2 "Time since conflict" lnpop200 "ln population" lnGDPPerCapita200 "ln GDP per cap" free_fair_elections "Electoral rights" ///
 	horizontal_constraint "Horizontal constraints" minority_rep "Minority representation" v2x_partip "V-Dem participation component" v2x_liberal "V-Dem liberal component" ///
@@ -908,7 +795,7 @@ eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 minority_rep cow
 eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_narrow  horizontal_constraint minority_rep cowyear   ///
 	if year <= 2016 & year >= `fy' & free_fair_narrow != . & horizontal_constraint != . & minority_rep != ., `ptag'
 
-	esttab using "../../Apps/ShareLaTex/V-dem civil peace/Results/`model'_Models_Table1b.tex", replace ///
+	esttab using "./Results/`model'_Models_Table1b.tex", replace ///
 	se nogaps stats(aic ll N)  ///
 	coeflabels(decay_2 "Time since conflict" lnpop200 "ln population" lnGDPPerCapita200 "ln GDP per cap" free_fair_narrow "Electoral rights, narrow" ///
 	horizontal_constraint "Horizontal constraints" minority_rep "Minority representation" v2x_partip "V-Dem participation component" v2x_liberal "V-Dem liberal component" ///
@@ -938,7 +825,7 @@ eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_electi
 eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 minority_rep mr_sq cowyear ///
 	if year <= 2016 & year >= `fy' & free_fair_elections != . & horizontal_constraint != . & minority_rep != ., `ptag'
 			
-esttab using "../../Apps/ShareLaTex/V-dem civil peace/Results/`model'_Models_squares.tex", replace ///
+esttab using "Results/`model'_Models_squares.tex", replace ///
 	se nogaps stats(aic ll N)  ///
 	coeflabels(decay_2 "Time since conflict" lnpop200 "ln population" lnGDPPerCapita200 "ln GDP per cap" free_fair_elections "Electoral rights" ///
 	horizontal_constraint "Horizontal constraints" minority_rep "Minority representation"  ///
@@ -999,7 +886,7 @@ eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 i.categorical mi
 
 matrix coef =e(b)	
 
-esttab using "../../Apps/ShareLaTex/V-dem civil peace/Results/`model'_Models_Table2.tex", replace ///
+esttab using "Results/`model'_Models_Table2.tex", replace ///
 	se nogaps stats(aic ll N)  ///
 	coeflabels(decay_2 "Time since conflict" lnpop200 "ln population" lnGDPPerCapita200 "ln GDP per cap" free_fair_elections "Electoral rights" ///
 	horizontal_constraint "Horizontal constraints" minority_rep "Minority representation" v2x_partip "V-Dem participation component" v2x_liberal "V-Dem liberal component" ///
@@ -1049,7 +936,7 @@ eststo: xi: `strmod' c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_electi
 
 matrix coef =e(b)	
 
-esttab using "../../Apps/ShareLaTex/V-dem civil peace/Results/`model'_Models_Table2_app.tex", replace ///
+esttab using "Results/`model'_Models_Table2_app.tex", replace ///
 	se nogaps stats(aic ll N)  ///
 	coeflabels(decay_2 "Time since conflict" lnpop200 "ln population" lnGDPPerCapita200 "ln GDP per cap" free_fair_elections "Electoral rights" ///
 	horizontal_constraint "Horizontal constraints" minority_rep "Minority representation" v2x_partip "V-Dem participation component" v2x_liberal "V-Dem liberal component" ///
@@ -1101,7 +988,7 @@ eststo: logit c_onset decay_2 lnpop200 lnGDPPerCapita200 v2x_polyarchy v2x_liber
 
 		
 	
-esttab using "../../Apps/ShareLaTex/V-dem civil peace/Results/VDem_models.tex", replace ///
+esttab using "Results/VDem_models.tex", replace ///
 	se nogaps stats(aic ll N)  ///
 		order( v2x_polyarchy v2x_liberal v2x_partip lnpop200 lnGDPPerCapita200  decay_2 cowyear ) ///
 
@@ -1140,13 +1027,13 @@ intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections mino
 	if year <= 2016 & free_fair_elections != . & horizontal_constraint != . & minority_rep != . & x_polity !=., ///
 	ivars( horizontal_constraint FHKN_RoL) cmdopts(r) difvals(.254 .795) ///
 	ytitle(Economic rights, change in predicted probability) 
-graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/ec_hor_int_dif.pdf", replace
+graph export "Figures/ec_hor_int_dif.pdf", replace
 
 intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections minority_rep cowyear   ///
 	if year <= 2016 & free_fair_elections != . & horizontal_constraint != . & minority_rep != . & x_polity !=., ///
 	ivars( horizontal_constraint FHKN_RoL) cmdopts(r) gphdif difvals(.254 .795) ///
 	ytitle(Economic rights, predicted probability) 
-graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/ec_hor_int_sep.pdf", replace
+graph export "Figures/ec_hor_int_sep.pdf", replace
 */
 /* Electoral rights - horizontal constraints interaction */
 set more off
@@ -1156,7 +1043,7 @@ intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 minority_rep cowyear ///
 	ivars( horizontal_constraint free_fair_elections) cmdopts(r) difvals(0 .36) ///
 	ytitle(Electoral rights, change in predicted probability) ///
 	gphopts(yline(0)) xinc(200)
-graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/vert_hor_int_dif.pdf", replace
+graph export "Figures/vert_hor_int_dif.pdf", replace
 
 
 intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 minority_rep cowyear ///
@@ -1164,7 +1051,7 @@ intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 minority_rep cowyear ///
 	ivars( horizontal_constraint free_fair_elections) cmdopts(r) gphdif difvals(0 .36) ///
 	ytitle(Electoral rights, predicted probability)  ///
 	gphopts(yline(0)) xinc(200)
-graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/vert_hor_int_sep.pdf", replace
+graph export "Figures/vert_hor_int_sep.pdf", replace
 
 
 /* Minority representation - horizontal constraints interaction */
@@ -1174,7 +1061,7 @@ intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections cowy
 	ivars( horizontal_constraint minority_rep) cmdopts(r) difvals(-.14 1.14) ///
 	ytitle(Minority representation, change in predicted probability)  ///
 	gphopts(yline(0)) xinc(200)
-graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/minor_hor_int_dif.pdf", replace
+graph export "Figures/minor_hor_int_dif.pdf", replace
 
 
 intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections cowyear   ///
@@ -1182,7 +1069,7 @@ intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections cowy
 	ivars( horizontal_constraint minority_rep) cmdopts(r) gphdif difvals(-.14 1.14) ///
 	ytitle(Minority representation, predicted probability)  ///
 	gphopts(yline(0)) xinc(200)
-graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/minor_hor_int_sep.pdf", replace
+graph export "Figures/minor_hor_int_sep.pdf", replace
 
 
 save "Tee/whole.dta", replace
