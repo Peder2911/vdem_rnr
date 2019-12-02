@@ -1,6 +1,7 @@
 /* Master-file V-Dem civil peace */
 /* Last changed 040718 by HF */
 
+/*
 capture cd "C:/Users/havnyg/Dropbox/"
 capture cd "/Users/havard/Dropbox/"
 capture cd "/Users/efx/Dropbox"
@@ -13,22 +14,16 @@ capture cd "/Users/hannefjelde/Dropbox"
 cd "Collaborations/V-DemCivilPeace/"
 set scheme s1mono
 set more off
+*/
 
 
 /* Base everything on a copy of the masterdata from the FVP book project */
-clear
+
 use  "InputData/FVP_masterdata_copy.dta", clear
 
 drop if gwno == 1000
 drop if year > 2016 /* Remove projection-only part of dataset */
 drop if year < 1900
-
-/*keep gwno year country name c_onset decay_2 lnpop lnGDPcap polity2 v2x_polyarchy v2x_partip v2x_liberal v2x_libdem v2x_frassoc_thick v2x_suffr v2xel_frefair ///
-	v2x_elecoff v2x_cspart v2xlg_legcon v2x_jucon v2xcl_rol v2xel_locelec  v2xel_regelec v2elffelr v2clrspct v2cltrnslw v2clacjstm v2clacjstw ///
-	v2clprptym v2clprptyw v2clrelig  v2xcl_dmove v2pepwrsoc v2x_freexp_thick v2clacjstm v2clacjstw ///
-	 v2elembaut v2elembcap v2elrgstry v2elvotbuy v2elirreg v2elfrfair v2x_elecreg  YMHEPSSP2 lnpop200 lnGDPPerCapita200 ///
-	 xconst xropen xrcomp v2x_clpriv*/
- 
 
 /* Conflict onset variable. Censored if conflict is going on */
 sort gwno year
@@ -47,6 +42,15 @@ gen c2war_onset = .
 replace c2war_onset = 1 if (conflict == 2) & (conflict[_n-1]==0 |conflict[_n-1]==1) & conflict[_n-2]==0 & gwno==gwno[_n-1]
 replace c2war_onset = 0 if conflict==0 
 replace c2war_onset =. if (conflict[_n-1]==2) &  c2war_onset[_n+1]==. & (conflict[_n+1]==2)  
+
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year c_onset c2_onset c2war_onset conflict
+save "Tee/onset.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
 
 
 * Decay function
@@ -67,12 +71,29 @@ replace no_c2war_onset=999 if gwno!= gwno[_n-1] & c2_onset==0
 by gwno: replace no_c2war_onset=999 if no_c2war_onset[_n-1]==999 & c2war_onset[_n-1]==0
 drop _spline*
 generate decay_c2war= 2^(-no_c2war_onset/2)
+
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year decay_c2war decay_c2 decay_c conflict
+save "Tee/decayvars.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
 	
 	
 /* Dummy to account for UCDP/COW coding differences */	
 gen cowyear = 0
 replace cowyear = 1 if year <= 1945
 
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year cowyear 
+save "Tee/cowyear.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
 
 /* Preparing other variables */
 gen lnpop = lnpop200
@@ -167,6 +188,24 @@ gen horizontal_constraint =  (v2xlg_legcon  + v2x_jucon + FHKN_RoL)/3
 
 gen horizontal_constraint_narrow =  (v2xlg_legcon + v2x_jucon)/2
 
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year v2elrgstry v2elvotbuy v2elirreg v2elfrfair 
+save "Tee/elvars.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
+
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year FHKN_frefair_temp FHKN_frefair free_fair_elections_narrow free_fair_elections combined_vertical civlib FHKN_RoL horizontal_constraint horizontal_constraint_narrow 
+save "Tee/vdem.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
+
 
 /* Vreeland's X-Polity index */
 replace xconst = . if xconst < -10
@@ -174,6 +213,15 @@ replace xropen = . if xropen < -10
 replace xrcomp = . if xrcomp < -10
 gen x_polity = (xconst + xropen + xrcomp) - 7
 gen x_polity_sq = x_polity^2
+
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year x_polity x_polity_sq 
+save "Tee/xpolity.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
 
 
 * Change in institutions
@@ -214,6 +262,14 @@ generate t_aut_hc=hc_neg_decay if hc_change_neg[_n-1]==1 & hc_change_pos!=1
 replace t_aut_hc= hc_neg_decay if t_aut_hc[_n-1]!=. &  hc_change_pos[_n-1]!=1
 replace t_aut_hc=0 if  t_aut_hc==. & hc_fd!=.
 
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year hc_fd_neg hc_change_neg hc_fd_pos hc_change_pos t_dem_hc t_aut_hc 
+save "Tee/institutions.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
  
  
 * Elections change
@@ -232,6 +288,15 @@ by gwno: replace ff_fd_pos=ff_fd if ff_fd>0 & ff_fd!=.
 
 generate ff_change_pos=0 if ff_fd_pos!=. 
 replace ff_change_pos=1 if ff_fd_pos>=0.1 & ff_fd_pos!=.
+
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year ff_fd ff_change free_fair_elections 
+save "Tee/elections_change.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
 
 
 btscs ff_change_neg year gwno, g(no_ff_change_neg) nspl(3)
@@ -253,8 +318,15 @@ replace t_dem_ff=0 if  t_dem_ff==. & ff_fd!=.
 generate t_aut_ff=ff_neg_decay if ff_change_neg[_n-1]==1 & ff_change_pos!=1
 replace t_aut_ff= ff_neg_decay if t_aut_ff[_n-1]!=. &  ff_change_pos[_n-1]!=1
 replace t_aut_ff=0 if  t_aut_ff==. & ff_fd!=.
- 
- 
+
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year ff_fd ff_change free_fair_elections ff_pos_decay ff_neg_decay t_dem_ff t_aut_ff 
+save "Tee/elections_change.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
  
 /* Descriptive statistics */
 /*
@@ -297,6 +369,14 @@ by gwno:  generate lfree_fair_elections_sq=l.free_fair_elections_sq
 gen vert_hor_int = free_fair_elections*horizontal_constraint_narrow 
 by gwno:  generate lvert_hor_int=l.vert_hor_int
 
+/* ======================================================== */
+save "Tee/whole.dta", replace
+/* Inspecting decay variable */
+keep gwno year  lhorizontal_constraint_narrow lfree_fair_elections llnpop200 llnGDPPerCapita200 lgrGDPPercapita200 llnGDPcap_oilrent lt_dem_ff lt_aut_ff lt_dem_hc lt_aut_hc lx_polity lx_polity_sq free_fair_elections_sq horizontal_constraint_narrow_sq lhorizontal_constraint_narrow_sq lfree_fair_elections_sq free_fair_elections horizontal_constraint_narrow lvert_hor_int
+save "Tee/lagged.dta", replace
+/* ========================= */
+use "Tee/whole.dta"
+/* ======================================================== */
 
 ************************************************************************************
 * Models for paper May 2018
@@ -1104,4 +1184,7 @@ intgph logit c_onset decay_2 lnpop200 lnGDPPerCapita200 free_fair_elections cowy
 graph export "../../Apps/ShareLaTex/V-dem civil peace/Figures/minor_hor_int_sep.pdf", replace
 
 
+save "Tee/whole.dta", replace
+
 outsheet using "InputData/FVP_V-Demcivpeace.csv", comma replace
+
