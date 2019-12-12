@@ -1,8 +1,26 @@
 
-InputData/*
-!InputData/.gitkeep
+*.rds
+*.tex
 
+InputData/*
+!InputData/manifest
+SuppData/*
+!SuppData/manifest
+
+Cache/*
+!Cache/.gitkeep
 Tee/*
 !Tee/.gitkeep
 
+Tables/original/*
+!Tables/original/manifest
+
+random/*
+
 *.swp
+
+push.R
+
+TASKS
+watch.py
+views

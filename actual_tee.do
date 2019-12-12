@@ -19,7 +19,7 @@ sort gwno year
 gen c2_onset = .
 replace c2_onset = 1 if (conflict==1 | conflict == 2) & conflict[_n-1]==0 & conflict[_n-2]==0 & gwno==gwno[_n-1]
 replace c2_onset = 0 if conflict== 0 
-replace c2_onset =. if (conflict[_n-1]==1 | conflict[_n-1]==2) &  c2_onset[_n+1]==. & (conflict[_n+1]==1 | conflict[_n+1]==2)  
+replace c2_onset =. if (conflict[_n-1]==1 | conflict[_n-1]==2) &  c2_onset[_n+1]==. & (conflict[_n+1]==1 | conflict[_n+1]==2) & gwno==gwno[_n-1] 
 
 sort gwno year
 gen c2war_onset = .
