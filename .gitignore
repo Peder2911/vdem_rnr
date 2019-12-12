@@ -18,9 +18,13 @@ Tables/original/*
 random/*
 
 *.swp
+<<<<<<< HEAD
 
 push.R
 
 TASKS
 watch.py
 views
+=======
+*.tex
+>>>>>>> c430bf1d3ff3c4e0f4dfe395dc7ce70f256835a2
