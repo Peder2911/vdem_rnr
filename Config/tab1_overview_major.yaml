@@ -1,0 +1,15 @@
+dependent_variable: "major_c2_onset"
+indep_one: "lfree_fair_elections"
+indep_two: "lhorizontal_constraint_narrow"
+
+base_controls: 
+   - "llnpop200"
+   - "llnGDPPerCapita200"
+   - "major_decay_c_term_long"
+new_controls: 
+   - "ethfrac"
+   - "lmtnest"
+   - "majorNbConflict"
+
+random_effects: 
+   - "(1|gwno)"
