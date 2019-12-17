@@ -19,6 +19,19 @@ shh(library(timelib))
 source("functions.R") 
 
 # ================================================
+#  This script reproduces the data-manipulation 
+#  steps necessary to train models for the RNR.
+# 
+#  These include creating indices, onset and decay
+#  variables and merging with combat-death
+#  data.
+# 
+#  The script caches the initial subset of the data
+#  to save time. To re-run the first steps, simply
+#  delete the file "Cache/cached.rds"
+# 
+
+# ================================================
 # CONSTANTS ======================================
 
 CACHEFILE <- "cached.rds"
@@ -90,7 +103,7 @@ if(!CACHEFILE %in% currentCache){
       filter(year == max(year)) %>%
       ungroup() %>%
       select(gwno,ethfrac,lmtnest)
-   dat <- merge(dat, fearon_laitin, c("gwno"), all.x = TRUE)
+   dat <- merge(dat, fearon_laitin, c("gwno"), all.x = TRUE) %>% arrange(gwno,year)
 
    cat(glue("nrow: {nrow(dat)} ncol: {ncol(dat)}\n"))
    saveRDS(dat,glue("Cache/{CACHEFILE}"))
@@ -110,8 +123,13 @@ if(!CACHEFILE %in% currentCache){
 
 dat <- dat %>%
    mutate(
+
       anyConflict = as.numeric(conflict != 0),
-      anyNbConflict = as.numeric(nb_conflict != 0)
+      majorConflict = as.numeric(conflict == 2),
+      minorConflict = as.numeric(conflict == 1),
+
+      anyNbConflict = as.numeric(nb_conflict != 0),
+      majorNbConflict = as.numeric(nb_conflict == 2)
    )
 
 dat <- dat %>%
@@ -120,20 +138,25 @@ dat <- dat %>%
       c_onset = makeOnset(anyConflict),
       c2_onset = makeOnset(anyConflict,tolerance = 1),
 
-      decay_c = makeDecay(c_onset, fn = curvedDecay()),
-      decay_c_long = makeDecay(c_onset, fn = curvedDecay(1.1)),
-
-      decay_c2 = makeDecay(c2_onset, fn = curvedDecay()),
-      decay_c2_long = makeDecay(c2_onset, fn = curvedDecay(1.1)),
-
-      c5_onset = makeOnset(anyConflict,tolerance = 5),
-      decay_c5 = makeDecay(c5_onset, fn = curvedDecay()),
-      decay_c5_long = makeDecay(c5_onset, fn = curvedDecay(1.1)),
+      c2_onset_major = makeOnset(majorConflict,tolerance = 1),
 
       c_term = change(anyConflict,"term"),
       c_term = offset(ifelse(c_term == 0 & anyConflict == 1,NA,c_term),-1),
+
       decay_c_term = makeDecay(c_term,halflife(10)),
       decay_c_term_long = makeDecay(c_term,halflife(35)),
+      decay_c_term_short = makeDecay(c_term,halflife(5)),
+
+      major_c_onset = makeOnset(majorConflict),
+      major_c2_onset = makeOnset(majorConflict,tolerance = 1),
+
+      major_c2_onset_major = makeOnset(majorConflict,tolerance = 1),
+
+      major_c_term = change(majorConflict,"term"),
+      major_c_term = offset(ifelse(major_c_term == 0 & majorConflict == 1,NA,major_c_term),-1),
+      major_decay_c_term = makeDecay(major_c_term,halflife(10)),
+      major_decay_c_term_long = makeDecay(major_c_term,halflife(35)),
+      major_decay_c_term_short = makeDecay(major_c_term,halflife(4)),
 
       # ============================================== 
       # Vertical constraints 
@@ -222,4 +245,4 @@ dat <- dat %>%
    ) %>%
    ungroup()
 
-saveRDS(dat,"data.rds")
+saveRDS(dat,"Cache/prepped_data.rds")
