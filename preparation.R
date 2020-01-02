@@ -128,17 +128,16 @@ dat <- dat %>%
       majorConflict = as.numeric(conflict == 2),
       minorConflict = as.numeric(conflict == 1),
 
-      anyNbConflict = as.numeric(nb_conflict != 0),
-      majorNbConflict = as.numeric(nb_conflict == 2)
+      nbConflict = as.numeric(nb_conflict != 0),
+      major_nbConflict = as.numeric(nb_conflict == 2)
    )
 
 dat <- dat %>%
    group_by(gwno) %>%
    mutate(
+
       c_onset = makeOnset(anyConflict),
       c2_onset = makeOnset(anyConflict,tolerance = 1),
-
-      c2_onset_major = makeOnset(majorConflict,tolerance = 1),
 
       c_term = change(anyConflict,"term"),
       c_term = offset(ifelse(c_term == 0 & anyConflict == 1,NA,c_term),-1),
@@ -147,16 +146,18 @@ dat <- dat %>%
       decay_c_term_long = makeDecay(c_term,halflife(35)),
       decay_c_term_short = makeDecay(c_term,halflife(5)),
 
+      timesince = nsince(as.numeric(c_term == 1|row_number() == 1)) %>% offset(1),
+
       major_c_onset = makeOnset(majorConflict),
       major_c2_onset = makeOnset(majorConflict,tolerance = 1),
-
-      major_c2_onset_major = makeOnset(majorConflict,tolerance = 1),
 
       major_c_term = change(majorConflict,"term"),
       major_c_term = offset(ifelse(major_c_term == 0 & majorConflict == 1,NA,major_c_term),-1),
       major_decay_c_term = makeDecay(major_c_term,halflife(10)),
       major_decay_c_term_long = makeDecay(major_c_term,halflife(35)),
       major_decay_c_term_short = makeDecay(major_c_term,halflife(4)),
+
+      major_timesince = nsince(as.numeric(c_term == 1|row_number() == 1)) %>% offset(1),
 
       # ============================================== 
       # Vertical constraints 

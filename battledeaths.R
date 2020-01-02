@@ -8,6 +8,7 @@ shh(library(gridExtra))
 shh(library(stargazer))
 shh(library(glue))
 shh(library(tidyr))
+shh(library(texreg))
 
 
 if(!"ged.rds" %in% list.files("Cache")){
@@ -123,7 +124,7 @@ models <- c(models,lapply(formulae,function(f){
 
 saveRDS(models,"Cache/model_casualties.rds")
 
-writeLines(stargazer(models,type = "html",omit="year"),"/tmp/tab.html")
+writeLines(htmlreg(models,type = "html",omit="year"),"/tmp/tab_deaths.html")
 
 statplots <- lapply(models, function(m){
    data.frame(ftd = m$fitted.values,rsd = m$residuals) %>%
