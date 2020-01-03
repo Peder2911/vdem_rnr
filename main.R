@@ -10,12 +10,22 @@ shh(library(texreg))
 shh(library(yaml))
 
 # ================================================
+# This script makes the "main" table for the paper,
+# as well as two axuillary tables that show model
+# robustness.
 
-# This script runs scripts that make tables and
-# ROC plots for a paper.
-#
-# TODO: write documentation
-#
+# The tables are made using a casing function
+# (model). This is done to reduce code repetition, and also
+# makes it possible to memoize (cache) the models for
+# repeated runs, making it a lot easier to do
+# iterative devlopment. 
+
+# Cached output is stored in Cache/
+
+# The input data (and "supplemental" data) is (of course) 
+# not included in this repository, and must be downloaded
+# separately. To ensure that you have the correct files,
+# hash them with md5 and compare with the "manifest" files.
 
 source("functions.R")
 
