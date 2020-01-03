@@ -1,0 +1,20 @@
+lfree_fair_elections: "Vertical Constraints"
+lhorizontal_constraint_narrow:  "Horizontal Constraints"
+
+llnpop200:  "ln Population (lagged)"
+llnGDPPerCapita200:  "ln GDP Per Capita (lagged)"
+
+ethfrac:  "Ethnic fractionalization"
+lmtnest:  "Mountainous terrain"
+
+nbConflict:  "Neighbouring conflict" 
+major_nbConflict:  "Neighbouring conflict (Major)" 
+
+decay_c_term_short:  "Conflict decay"
+major_decay_c_term_short:  "Conflict decay (Major)"
+
+timesince:  "Time since conflict"
+I(timesince^2):  "Time since conflict squared"
+I(timesince^3):  "Time since conflict cubed"
+
+(Intercept):  "(Intercept)"

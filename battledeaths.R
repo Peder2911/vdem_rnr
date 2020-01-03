@@ -9,11 +9,15 @@ shh(library(stargazer))
 shh(library(glue))
 shh(library(tidyr))
 shh(library(texreg))
+shh(library(yaml))
 
+source("functions.R")
 
 if(!"ged.rds" %in% list.files("Cache")){
    c <- dbConnect(SQLite(),"SuppData/ged191.sqlite")
    ged <- dbGetQuery(c,"SELECT * FROM ged")
+
+VARIABLE_NAMES <- yaml.load_file("vnames.yaml")
 
 # ================================================
 
@@ -99,44 +103,57 @@ modelwith <- function(rhs){
 
 
 formulae <- lapply(list(
-   c(INDEP_ONE,BASE_CONTROLS),
+   #c(INDEP_ONE,BASE_CONTROLS),
    c(INDEP_ONE,BASE_CONTROLS,NEW_CONTROLS),
-   #c(INDEP_ONE,BASE_CONTROLS,NEW_CONTROLS,CTRY_FIXED_EFFECTS),
-   c(INDEP_ONE,BASE_CONTROLS,NEW_CONTROLS,TIME_FIXED_EFFECTS),
-   c(INDEP_TWO,BASE_CONTROLS),
    c(INDEP_TWO,BASE_CONTROLS,NEW_CONTROLS),
-   #c(INDEP_TWO,BASE_CONTROLS,NEW_CONTROLS,CTRY_FIXED_EFFECTS),
-   c(INDEP_TWO,BASE_CONTROLS,NEW_CONTROLS,TIME_FIXED_EFFECTS)
+   c(INDEP_ONE,BASE_CONTROLS,NEW_CONTROLS,TIME_FIXED_EFFECTS),
+   c(INDEP_TWO,BASE_CONTROLS,NEW_CONTROLS,TIME_FIXED_EFFECTS),
+   c(INDEP_ONE,BASE_CONTROLS,NEW_CONTROLS,CTRY_FIXED_EFFECTS),
+   c(INDEP_TWO,BASE_CONTROLS,NEW_CONTROLS,CTRY_FIXED_EFFECTS)
+   #c(INDEP_TWO,BASE_CONTROLS),
    ), modelwith)
 
 models <- lapply(formulae,function(f){
    #lm(f,data = anadata)
-   glm(f("deaths"),family = poisson(link="log"), data = anadata)
-})
-models <- c(models,lapply(formulae,function(f){
-   #lm(f,data = anadata)
-   lm(f("deaths"), data = anadata)
-}))
-models <- c(models,lapply(formulae,function(f){
-   #lm(f,data = anadata)
    lm(f("log(deaths+1)"), data = anadata)
-}))
-
-saveRDS(models,"Cache/model_casualties.rds")
-
-writeLines(htmlreg(models,type = "html",omit="year"),"/tmp/tab_deaths.html")
-
-statplots <- lapply(models, function(m){
-   data.frame(ftd = m$fitted.values,rsd = m$residuals) %>%
-      ggplot(aes(x=ftd,y=rsd)) + geom_point()
 })
-do.call(grid.arrange, c(statplots,list(ncol = 2))) %>%
-   ggsave("/tmp/plt.pdf",.,device = "pdf", height = 20, width=10)
 
-decplots <- anadata %>%
-   filter(gwno == 101) %>%
-   select(year,decay_c_term,decay_c_term_short,anyConflict) %>%
-   gather(var,val,-year) %>%
-   ggplot(aes(x=year,y=val,color=var)) + geom_line() + dark_mode()
- 
-ggsave("/tmp/plt2.pdf",decplots,device = "pdf", height = 10, width=20)
+#models <- lapply(formulae,function(f){
+#   #lm(f,data = anadata)
+#   glm(f("deaths"),family = poisson(link="log"), data = anadata)
+#})
+#models <- c(models,lapply(formulae,function(f){
+#   #lm(f,data = anadata)
+#   lm(f("deaths"), data = anadata)
+#}))
+
+#saveRDS(models,"Cache/model_casualties.rds")
+texreg(models,
+   custom.coef.map = yaml.load_file("vnames.yaml"),
+   custom.model.names = c(
+      "OLS A",
+      "OLS B",
+      "Time FE A",
+      "Time FE B",
+      "Country FE A",
+      "Country FE B"
+   ),
+   caption = "",
+   omit="(year|gwno)") %>%
+   stripenv() %>%
+   writeLines("Out/deathstable.tex")
+
+#statplots <- lapply(models, function(m){
+   #data.frame(ftd = m$fitted.values,rsd = m$residuals) %>%
+      #ggplot(aes(x=ftd,y=rsd)) + geom_point()
+#})
+#do.call(grid.arrange, c(statplots,list(ncol = 2))) %>%
+   #ggsave("/tmp/plt.pdf",.,device = "pdf", height = 20, width=10)
+#
+#decplots <- anadata %>%
+   #filter(gwno == 101) %>%
+   #select(year,decay_c_term,decay_c_term_short,anyConflict) %>%
+   #gather(var,val,-year) %>%
+   #ggplot(aes(x=year,y=val,color=var)) + geom_line() + dark_mode()
+ #
+#ggsave("/tmp/plt2.pdf",decplots,device = "pdf", height = 10, width=20)

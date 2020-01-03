@@ -1,6 +1,8 @@
 
 suppressPackageStartupMessages(library(timelib))
 suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(glue))
+suppressPackageStartupMessages(library(stringr))
 
 #' makeOnset 
 #' 
@@ -130,4 +132,21 @@ onsetAndTerm <- function(data,...,n=1){
       }
       data
    }
+}
+
+#' stripenv
+#' 
+#' "Prepares" the table for Overleaf by commenting out some tags. 
+
+stripenv <- function(tex){
+   pattern <- "^\\\\(caption|label|(begin|end)\\{(center|table))"
+   lines <- str_split(tex,"\n",simplify = TRUE)
+   lines <- sapply(lines, function(l){
+      if(str_detect(l, pattern)){
+         paste0("%",l)
+      } else {
+         l
+      }
+   })
+   glue_collapse(lines,"\n")
 }

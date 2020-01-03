@@ -25,5 +25,7 @@ push.R
 TASKS
 watch.py
 views
+
 *.tex
 *.swp
+*.pdf

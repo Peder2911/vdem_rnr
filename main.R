@@ -7,6 +7,7 @@ shh(library(parallel))
 shh(library(glue))
 shh(library(splines))
 shh(library(texreg))
+shh(library(yaml))
 
 # ================================================
 
@@ -15,6 +16,8 @@ shh(library(texreg))
 #
 # TODO: write documentation
 #
+
+source("functions.R")
 
 # ================================================
 # Run "replication.R" to produce data.
@@ -29,28 +32,7 @@ partial_data <- filter(data,year >= 1946)
 # ================================================
 
 # This list also orders the variables in the tables.
-VARIABLE_NAMES <- list(
-   lfree_fair_elections = "Vertical Constraints",
-   lhorizontal_constraint_narrow = "Horizontal Constraints",
-
-   llnpop200 = "ln Population (lagged)",
-   llnGDPPerCapita200 = "ln GDP Per Capita (lagged)",
-
-   ethfrac = "Ethnic fractionalization",
-   lmtnest = "Mountainous terrain",
-
-   nbConflict = "Neighbouring conflict", 
-   major_nbConflict = "Neighbouring conflict (Major)", 
-
-   decay_c_term_short = "Conflict decay",
-   major_decay_c_term_short = "Conflict decay (Major)",
-
-   timesince = "Time since conflict",
-   `I(timesince^2)` = "Time since conflict squared",
-   `I(timesince^3)`  = "Time since conflict cubed",
-
-   `(Intercept)` = "(Intercept)"
-   )
+VARIABLE_NAMES <- yaml.load_file("vnames.yaml")
 
 # ================================================
 # Functions 
@@ -146,23 +128,25 @@ year_re <- call("model",partial_data,re = "time") %>%
 either_re <- call("model", partial_data, re = "both") %>%
    memoize("Cache/either_random_effects.rds")
 
-table_1 <- htmlreg(c(partial_regular,country_re,year_re,either_re,full_regular),
+table_1 <- texreg(c(partial_regular,country_re,year_re,either_re,full_regular),
    custom.model.names = c(
-      "Logistic A",
-      "Logistic B",
-      "Country RE A",
-      "Country RE B",
-      "Year RE A",
-      "Year RE B",
-      "Combined RE A",
-      "Combined RE B",
-      "Full Logistic A",
-      "Full Logistic B"
+      "Log. A",
+      "Log. B",
+      "Ctry. RE A",
+      "Ctry. RE B",
+      "Yr. RE A",
+      "Yr. RE B",
+      "Comb. RE A",
+      "Comb. RE B",
+      "Full A",
+      "Full B"
    ),
    custom.coef.map = VARIABLE_NAMES,
    caption = "",
+   stars = c(0.01,0.05,0.1),
    digits = 3)
-writeLines(table_1, "/tmp/tab.html")
+
+writeLines(stripenv(table_1), "Out/table_1.tex")
 
 # ================================================
 # TABLE 2 (Time controls)
@@ -173,11 +157,19 @@ polynomials <- call("model",partial_data,timectrl = "polynomials") %>%
 splines <- call("model",partial_data,timectrl = "splines") %>%
    memoize("Cache/splines.rds")
 
-table_1 <- htmlreg(c(polynomials,splines),
-   #custom.coef.map = VARIABLE_NAMES,
+timetable <- texreg(c(polynomials,splines),
+   custom.coef.map = VARIABLE_NAMES,
+   omit = "bs",
    caption = "",
+   stars = c(0.01,0.05,0.1),
+   custom.model.names = c(
+      "Polynomial time A",
+      "Polynomial time B",
+      "Spline time A",
+      "Spline time B"
+   ),
    digits = 3)
-writeLines(table_1, "/tmp/tab2.html")
+writeLines(stripenv(timetable), "Out/timetable.tex")
 
 # ================================================
 # Major conflict models
@@ -197,20 +189,21 @@ major_year_re <- call("model",partial_data,re = "time",major=TRUE) %>%
 major_either_re <- call("model", partial_data, re = "both",major=TRUE) %>%
    memoize("Cache/major_either_random_effects.rds")
 
-table_1 <- htmlreg(c(major_partial_regular,major_country_re,major_year_re,major_either_re,major_full_regular),
+majortable <- texreg(c(major_partial_regular,major_country_re,major_year_re,major_either_re,major_full_regular),
    custom.model.names = c(
-      "Logistic A",
-      "Logistic B",
-      "Country RE A",
-      "Country RE B",
-      "Year RE A",
-      "Year RE B",
-      "Combined RE A",
-      "Combined RE B",
-      "Full Logistic A",
-      "Full Logistic B"
+      "Log. A",
+      "Log. B",
+      "Ctry. RE A",
+      "Ctry. RE B",
+      "Yr. RE A",
+      "Yr. RE B",
+      "Comb. RE A",
+      "Comb. RE B",
+      "Full A",
+      "Full B"
    ),
    custom.coef.map = VARIABLE_NAMES,
    caption = "",
+   stars = c(0.01,0.05,0.1),
    digits = 3)
-writeLines(table_1, "/tmp/tab3.html")
+writeLines(stripenv(majortable), "Out/majortable.tex")
