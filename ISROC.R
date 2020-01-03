@@ -1,26 +1,67 @@
 library(dplyr)
 library(evallib)
 library(ggplot2)
+library(parallel)
 
-rocPlots <- function(models,depvar){
-   lapply(models,function(m){
-      dat <- m@frame
-      dat[["outcome"]] <- dat[[depvar]]
+regular <- readRDS("Cache/regular.rds")
+polity <- readRDS("Cache/polity.rds")
 
-      dat$pred <- predict(m,dat,type="response")
+preds <- lapply(c(regular,polity), function(mdl){
+   dat <- mdl$data
+   dat$pred <- predict(mdl,dat,type = "response")
+   select(dat,gwno,year,pred,outcome = c2_onset)
+})
 
-      roc <- roc(dat$pred,dat$outcome)
-      auc <- auc(roc$fallout,roc$recall) 
+curves <- mclapply(preds, function(dat){
+   dat <- dat[complete.cases(dat),]
+   roc(dat$pred, dat$outcome)
+}, mc.cores = 7)
 
-      plt <- roc %>% 
-      ggplot(aes(x=fallout,y=recall)) + 
-         geom_line()+
-         geom_abline(intercept=0,slope=1,color="red")+
-         labs(subtitle=paste0("AUC: ",round(auc,4))) 
-   })
+names <- c(
+   "Vertical constraints", 
+   "Horizontal constraints", 
+   "Polity Index")
+orderednames <- factor(
+      names,
+      levels = names
+   )
+
+for(i in 1:3){
+   curves[[i]]$type <- orderednames[i]
 }
 
-anyConflict <- rocPlots(readRDS("Cache/models_partial_re.rds"),"c2_onset") %>%
-   saveRDS("Cache/rocs.rds")
-majorConflict <- rocPlots(readRDS("Cache/major_models_partial_re.rds"),"major_c2_onset") %>%
-   saveRDS("Cache/major_rocs.rds")
+aucs <- sapply(curves,function(curve){
+   auc(curve$fallout,curve$recall)
+   }) 
+
+aucs <- tibble(val = aucs, type = orderednames) %>%
+   mutate(
+      repr = paste0(type, ": ", round(val, digits = 3)),
+      order = row_number()
+      )
+
+write.csv(aucs,"/tmp/view.csv",row.names = FALSE)
+
+curves <- do.call(rbind, curves) 
+rocCurve <- ggplot(curves, aes(x=fallout,y=recall,color=type)) +
+   geom_path() +
+   geom_abline(intercept = 0, slope = 1) +
+   geom_text(data = aucs, 
+      aes(x = 1, y = 0.4 - 0.1 * order, label = repr),
+      size = 6,
+      hjust = 1) +
+   labs(x = "Fallout", y = "Recall", color = "Predictor")+
+   theme_classic() +
+   scale_color_manual(values = c(
+   `Vertical constraints`="#e41a1c", 
+   `Horizontal constraints`="#377eb8", 
+   `Polity Index`="#4daf4a"
+   )) +
+   theme(
+      text = element_text(size = 18),
+      legend.position = "bottom") +
+   guides(color=guide_legend(override.aes=list(size=5)))
+   
+
+ggsave("Out/roc_comparison.pdf", rocCurve, 
+   device = "pdf", height = 8, width = 8) 

@@ -13,8 +13,12 @@ major_nbConflict:  "Neighbouring conflict (Major)"
 decay_c_term_short:  "Conflict decay"
 major_decay_c_term_short:  "Conflict decay (Major)"
 
-timesince:  "Time since conflict"
-I(timesince^2):  "Time since conflict squared"
-I(timesince^3):  "Time since conflict cubed"
+timesince:  "Yr. since conflict"
+timesince_sq:  "Yr. since conflict sq."
+timesince_cb:  "Yr. since conflict cb."
+
+major_timesince:  "Yr. since conflict (Maj.)"
+major_timesince_sq:  "Yr. since conflict sq. (Maj.)"
+major_timesince_cb:  "Yr. since conflict cb. (Maj.)"
 
 (Intercept):  "(Intercept)"

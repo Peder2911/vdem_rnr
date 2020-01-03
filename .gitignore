@@ -19,6 +19,7 @@ Out/*
 !Out/manifest
 
 random/*
+depr/*
 
 push.R
 
@@ -29,3 +30,4 @@ views
 *.tex
 *.swp
 *.pdf
+

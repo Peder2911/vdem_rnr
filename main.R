@@ -51,7 +51,14 @@ memoize <- function(call,file){
    }
 }
 
-model <- function(data,tolerance = 2, depvar = "onset",timectrl="decay",re = "none",major = FALSE){
+model <- function(data,
+   tolerance = 2, # c{n}_onset as dependent variable
+   timectrl="decay", # Choice of time control (spline /polyn. /decay)
+   re = "none", # Random effects?
+   major = FALSE, # Major conflicts only?
+   predictor = "vdem" # vdem or polity as explanatory variable 
+   ){
+
    # This function outputs a list of two models, one for each predictor.
    # The model can be customized with various parameters, like different time controls.
 
@@ -62,7 +69,11 @@ model <- function(data,tolerance = 2, depvar = "onset",timectrl="decay",re = "no
    # this part creates the formula to model
 
 
-   predictors <- c("lfree_fair_elections","lhorizontal_constraint_narrow")
+   predictors <- switch(predictor,
+      vdem = c("lfree_fair_elections","lhorizontal_constraint_narrow"),
+      polity = "polity"
+   )
+   #predictors <- c("lfree_fair_elections","lhorizontal_constraint_narrow")
 
    dependentVariable <- glue("{maj}c{tolerance}_onset")
 
@@ -76,8 +87,9 @@ model <- function(data,tolerance = 2, depvar = "onset",timectrl="decay",re = "no
 
    time <- switch(timectrl,
       decay = "{maj}decay_c_term_short",
-      polynomials = c("{maj}timesince","I({maj}timesince^2)","I({maj}timesince^3)"),
-      splines = "bs({maj}timesince,knots = c(1,4,7))"
+      polynomials = c("{maj}timesince","{maj}timesince_sq","{maj}timesince_cb"),
+      splines = "bs({maj}timesince,knots = c(1,4,7))",
+      ceiling = c("timesince_tr","timesince_tr_sq","timesince_tr_cb")
       ) %>% sapply(glue)
 
    effects <- c("(1|gwno)","(1|year)")
@@ -113,31 +125,27 @@ model <- function(data,tolerance = 2, depvar = "onset",timectrl="decay",re = "no
 # ================================================
 # TABLE 1
 
-partial_regular <- call("model",partial_data) %>%
+partial_regular <- call("model",partial_data,timectrl="polynomials") %>%
    memoize("Cache/regular.rds")
 
-full_regular <- call("model",data) %>%
+full_regular <- call("model",data,timectrl="polynomials") %>%
    memoize("Cache/full_regular.rds")
 
-country_re <- call("model",partial_data,re = "country") %>%
+country_re <- call("model",partial_data,re = "country",timectrl="polynomials") %>%
    memoize("Cache/country_random_effects.rds")
 
-year_re <- call("model",partial_data,re = "time") %>%
-   memoize("Cache/year_random_effects.rds")
+#year_re <- call("model",partial_data,re = "time") %>%
+#   memoize("Cache/year_random_effects.rds")
 
-either_re <- call("model", partial_data, re = "both") %>%
-   memoize("Cache/either_random_effects.rds")
+#either_re <- call("model", partial_data, re = "both") %>%
+#   memoize("Cache/either_random_effects.rds")
 
-table_1 <- texreg(c(partial_regular,country_re,year_re,either_re,full_regular),
+table_1 <- texreg(c(partial_regular,country_re,full_regular),
    custom.model.names = c(
       "Log. A",
       "Log. B",
       "Ctry. RE A",
       "Ctry. RE B",
-      "Yr. RE A",
-      "Yr. RE B",
-      "Comb. RE A",
-      "Comb. RE B",
       "Full A",
       "Full B"
    ),
@@ -151,22 +159,26 @@ writeLines(stripenv(table_1), "Out/table_1.tex")
 # ================================================
 # TABLE 2 (Time controls)
 
-polynomials <- call("model",partial_data,timectrl = "polynomials") %>%
-   memoize("Cache/regular_polynomials.rds")
+decay <- call("model",partial_data) %>%
+   memoize("Cache/decay.rds")
 
 splines <- call("model",partial_data,timectrl = "splines") %>%
    memoize("Cache/splines.rds")
 
-timetable <- texreg(c(polynomials,splines),
+ceiling <- call("model",partial_data,timectrl = "ceiling") %>%
+   memoize("Cache/ceiling.rds")
+
+timetable <- texreg(c(decay,splines,ceiling),
    custom.coef.map = VARIABLE_NAMES,
-   omit = "bs",
    caption = "",
    stars = c(0.01,0.05,0.1),
    custom.model.names = c(
-      "Polynomial time A",
-      "Polynomial time B",
+      "Decay A",
+      "Decay B",
       "Spline time A",
-      "Spline time B"
+      "Spline time B",
+      "Ceil. time A",
+      "Ceil. time B"
    ),
    digits = 3)
 writeLines(stripenv(timetable), "Out/timetable.tex")
@@ -174,31 +186,27 @@ writeLines(stripenv(timetable), "Out/timetable.tex")
 # ================================================
 # Major conflict models
 
-major_partial_regular <- call("model",partial_data,major=TRUE) %>%
+major_partial_regular <- call("model",partial_data,major=TRUE,timectrl="polynomials") %>%
    memoize("Cache/major_regular.rds")
 
-major_full_regular <- call("model",data,major=TRUE) %>%
+major_full_regular <- call("model",data,major=TRUE,timectrl="polynomials") %>%
    memoize("Cache/major_full_regular.rds")
 
-major_country_re <- call("model",partial_data,re = "country",major=TRUE) %>%
+major_country_re <- call("model",partial_data,re = "country",major=TRUE,timectrl="polynomials") %>%
    memoize("Cache/major_country_random_effects.rds")
 
-major_year_re <- call("model",partial_data,re = "time",major=TRUE) %>%
-   memoize("Cache/major_year_random_effects.rds")
+#major_year_re <- call("model",partial_data,re = "time",major=TRUE) %>%
+   #memoize("Cache/major_year_random_effects.rds")
 
-major_either_re <- call("model", partial_data, re = "both",major=TRUE) %>%
-   memoize("Cache/major_either_random_effects.rds")
+#major_either_re <- call("model", partial_data, re = "both",major=TRUE) %>%
+   #memoize("Cache/major_either_random_effects.rds")
 
-majortable <- texreg(c(major_partial_regular,major_country_re,major_year_re,major_either_re,major_full_regular),
+majortable <- texreg(c(major_partial_regular,major_country_re,major_full_regular),
    custom.model.names = c(
       "Log. A",
       "Log. B",
       "Ctry. RE A",
       "Ctry. RE B",
-      "Yr. RE A",
-      "Yr. RE B",
-      "Comb. RE A",
-      "Comb. RE B",
       "Full A",
       "Full B"
    ),
@@ -207,3 +215,9 @@ majortable <- texreg(c(major_partial_regular,major_country_re,major_year_re,majo
    stars = c(0.01,0.05,0.1),
    digits = 3)
 writeLines(stripenv(majortable), "Out/majortable.tex")
+
+# ================================================
+# Polity (for ROC plot)
+
+polity <- call("model", partial_data, predictor = "polity",timectrl = "polynomials") %>%
+   memoize("Cache/polity.rds")

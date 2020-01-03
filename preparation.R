@@ -95,6 +95,10 @@ if(!CACHEFILE %in% currentCache){
          # Neighbouring conflict
          nb_conflict,
 
+         #===================================================
+         # Polity score (alternative hyp.)
+         polity = polity2,
+
       ) 
 
    fearon_laitin <- read_dta("SuppData/repdata.dta") %>%
@@ -146,7 +150,19 @@ dat <- dat %>%
       decay_c_term_long = makeDecay(c_term,halflife(35)),
       decay_c_term_short = makeDecay(c_term,halflife(5)),
 
+      timesince_tr = nsince(c_term) %>% offset(1),
+      timesince_tr = ifelse(is.na(timesince_tr),999, timesince_tr),
+      timesince_tr_sq = timesince_tr ^ 2, 
+      timesince_tr_cb = timesince_tr ^ 3, 
+
       timesince = nsince(as.numeric(c_term == 1|row_number() == 1)) %>% offset(1),
+      timesince_sq = timesince ^ 2,
+      timesince_cb = timesince ^ 3,
+
+      # Rescale time since conflict to fix convergence issue
+      timesince = timesince / max(timesince,na.rm = T),
+      timesince_sq = timesince_sq / max(timesince_sq,na.rm = T),
+      timesince_cb = timesince_cb / max(timesince_cb,na.rm = T),
 
       major_c_onset = makeOnset(majorConflict),
       major_c2_onset = makeOnset(majorConflict,tolerance = 1),
@@ -157,7 +173,14 @@ dat <- dat %>%
       major_decay_c_term_long = makeDecay(major_c_term,halflife(35)),
       major_decay_c_term_short = makeDecay(major_c_term,halflife(4)),
 
-      major_timesince = nsince(as.numeric(c_term == 1|row_number() == 1)) %>% offset(1),
+      major_timesince = nsince(as.numeric(major_c_term == 1|row_number() == 1)) %>% offset(1),
+      major_timesince_sq = major_timesince ^ 2,
+      major_timesince_cb = major_timesince ^ 3,
+
+      # Rescale time since conflict to fix convergence issue
+      major_timesince = major_timesince / max(major_timesince,na.rm = T),
+      major_timesince_sq = major_timesince_sq / max(major_timesince_sq,na.rm = T),
+      major_timesince_cb = major_timesince_cb / max(major_timesince_cb,na.rm = T),
 
       # ============================================== 
       # Vertical constraints 
@@ -170,7 +193,6 @@ dat <- dat %>%
       v2elvotbuy = fixElvar(v2elvotbuy,v2x_elecreg),
       v2elirreg = fixElvar(v2elirreg,v2x_elecreg),
       v2elfrfair = fixElvar(v2elfrfair,v2x_elecreg),
-
       ) %>%
    ungroup()
 
