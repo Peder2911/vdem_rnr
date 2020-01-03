@@ -9,5 +9,7 @@ There are several scripts, that must be run in succession. Each script
 populates the cache folder with data objects that can then be used to create
 tables and plots.
 
-Run the script "main.R" to execute the scripts in the correct order to create the
-plots and tables used in the article.
+main.R creates several tables, both table_1 and tables included in the
+appendix. battledeaths.R creates the model /table of battledeath predictions,
+while ISROC creates the in-sample ROC plot.
+
