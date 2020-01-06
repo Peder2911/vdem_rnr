@@ -7,6 +7,8 @@ shh(library(parallel))
 shh(library(glue))
 shh(library(splines))
 shh(library(texreg))
+shh(library(lmtest))
+shh(library(sandwich))
 shh(library(yaml))
 
 # ================================================
@@ -127,8 +129,15 @@ model <- function(data,
       if(re != "none"){
          args$control <- glmerControl(optimizer = "Nelder_Mead")
       }
+
+      if(re == "none"){
+         m <- do.call(glm, args)
+         coeftest(m, vcov = vcovHC(m, type = "HC0", cluster = "gwno"))
+      } else {
+         do.call(glmer, args)
+      }
       
-      do.call(ifelse(re == "none",glm, glmer), args)
+      #do.call(ifelse(re == "none",glm, glmer), args)
    })
 }
 
