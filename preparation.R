@@ -140,8 +140,11 @@ dat <- dat %>%
    group_by(gwno) %>%
    mutate(
 
-      c_onset = makeOnset(anyConflict),
+      c0_onset = makeOnset(anyConflict),
       c2_onset = makeOnset(anyConflict,tolerance = 1),
+      c4_onset = makeOnset(anyConflict,tolerance = 3),
+      c7_onset = makeOnset(anyConflict,tolerance = 6),
+      c10_onset = makeOnset(anyConflict,tolerance = 10),
 
       c_term = change(anyConflict,"term"),
       c_term = offset(ifelse(c_term == 0 & anyConflict == 1,NA,c_term),-1),

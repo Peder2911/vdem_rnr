@@ -231,3 +231,33 @@ writeLines(stripenv(majortable), "Out/majortable.tex")
 
 polity <- call("model", partial_data, predictor = "polity",timectrl = "polynomials") %>%
    memoize("Cache/polity.rds")
+
+# ================================================
+# Peace-year-skip robustness 
+
+noskip <- call("model",partial_data,tolerance=0,timectrl="polynomials") %>%
+   memoize("Cache/noskip.rds")
+fourskip <- call("model",partial_data,tolerance=4,timectrl="polynomials") %>%
+   memoize("Cache/fourskip.rds")
+sevenskip <- call("model",partial_data,tolerance=7,timectrl="polynomials") %>%
+   memoize("Cache/sevenskip.rds")
+tenskip <- call("model",partial_data,tolerance=10,timectrl="polynomials") %>%
+   memoize("Cache/tenskip.rds")
+
+skiptable <- texreg(c(noskip,fourskip,sevenskip,tenskip),
+   custom.model.names = c(
+      "Skip 0 A",
+      "Skip 0 B",
+      "Skip 4 A",
+      "Skip 4 B",
+      "Skip 7 A",
+      "Skip 7 B",
+      "Skip 10 A",
+      "Skip 10 B"
+   ),
+   custom.coef.map = VARIABLE_NAMES,
+   caption = "",
+   stars = c(0.01,0.05,0.1),
+   digits = 3)
+writeLines(stripenv(skiptable),"Out/skiptable.tex")
+
