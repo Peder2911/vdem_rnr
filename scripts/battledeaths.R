@@ -48,7 +48,7 @@ VARIABLE_NAMES <- yaml.load_file("vnames.yaml")
    ged_sum <- readRDS("Cache/ged.rds")
 }
 
-repr <- readRDS("data.rds")
+repr <- readRDS("Cache/prepped_data.rds")
 anacountries <- unique(repr$gwno)
 missing <- anacountries[!anacountries %in% ged_sum$country_id]
 casualty_padding <- lapply(missing, function(ccode){
@@ -83,7 +83,7 @@ INDEP_ONE <- "lfree_fair_elections"
 INDEP_TWO <- "lhorizontal_constraint_narrow"
 
 BASE_CONTROLS <- c("llnpop200", "llnGDPPerCapita200","decay_c_term_short")
-NEW_CONTROLS <- c("ethfrac", "lmtnest", "anyNbConflict")
+NEW_CONTROLS <- c("ethfrac", "lmtnest", "nbConflict")
 
 TIME_FIXED_EFFECTS <- c("as.factor(year)")
 CTRY_FIXED_EFFECTS <- c("as.factor(gwno)")

@@ -1,7 +1,8 @@
-library(dplyr)
-library(evallib)
-library(ggplot2)
-library(parallel)
+shh <- suppressPackageStartupMessages
+shh(library(dplyr))
+shh(library(evallib))
+shh(library(ggplot2))
+shh(library(parallel))
 
 regular <- readRDS("Cache/regular.rds")
 polity <- readRDS("Cache/polity.rds")

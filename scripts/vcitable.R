@@ -1,8 +1,9 @@
 
-library(timelib)
-library(texreg)
-library(parallel)
-library(yaml)
+shh <- suppressPackageStartupMessages
+shh(library(timelib))
+shh(library(texreg))
+shh(library(parallel))
+shh(library(yaml))
 
 source("functions.R")
 

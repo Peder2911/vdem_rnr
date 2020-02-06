@@ -1,6 +1,12 @@
+
 lfree_fair_elections: "Vertical Constraints"
+lfree_fair_elections_sq: "Vertical Constraints sq."
 index: "Vertical Constraints"
+
 lhorizontal_constraint_narrow:  "Horizontal Constraints"
+lhorizontal_constraint_narrow_sq:  "Horizontal Constraints sq."
+
+lfree_fair_elections:lhorizontal_constraint_narrow: "Vertical Constraints * Horizontal Constraints"
 
 llnpop200:  "ln Population (lagged)"
 llnGDPPerCapita200:  "ln GDP Per Capita (lagged)"
@@ -11,6 +17,10 @@ lmtnest:  "Mountainous terrain"
 nbConflict:  "Neighbouring conflict" 
 major_nbConflict:  "Neighbouring conflict (Major)" 
 
+lgrGDPPerCapita200: "Economic growth"
+llnGDPcap_oilrent: "ln Oil Rent GDP pc."
+ltimeindep: "Time since independence"
+
 decay_c_term_short:  "Conflict decay"
 major_decay_c_term_short:  "Conflict decay (Major)"
 
@@ -18,8 +28,41 @@ timesince:  "Yr. since conflict"
 timesince_sq:  "Yr. since conflict sq."
 timesince_cb:  "Yr. since conflict cb."
 
+timesince_norm:  "Norm. yr. since conflict"
+timesince_sq_norm:  "Norm. yr. since conflict sq."
+timesince_cb_norm:  "Norm. yr. since conflict cb."
+
 major_timesince:  "Yr. since conflict (Maj.)"
 major_timesince_sq:  "Yr. since conflict sq. (Maj.)"
 major_timesince_cb:  "Yr. since conflict cb. (Maj.)"
 
+major_timesince_norm:  "Norm. yr. since conflict (Maj.)"
+major_timesince_sq_norm:  "Norm. yr. since conflict sq. (Maj.)"
+major_timesince_cb_norm:  "Norm. yr. since conflict cb. (Maj.)"
+
+x_polity: "Polity"
+x_polity_sq: "Polity sq."
+
+ff_dem: "Vert. constraints pos. change"
+ff_aut: "Vert. constraints neg. change"
+
+hc_dem: "Hor. constraints pos. change"
+hc_aut: "Hor. constraints neg. change"
+
+
+dec_40: "1940s"
+dec_50: "1950s"
+dec_60: "1960s"
+dec_70: "1970s"
+dec_80: "1980s"
+dec_90: "1990s"
+dec_00: "2000s"
+dec_10: "2010s"
+
+reg_southam: "South/Central America"
+reg_ssafrica: "Sub-Saharan Africa"
+reg_seasia: "South/East/Central Asia"
+reg_mena: "Middle east / North Africa"
+
 (Intercept):  "(Intercept)"
+

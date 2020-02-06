@@ -35,7 +35,10 @@ source("functions.R")
 # Run "replication.R" to produce data.
 
 if(!"prepped_data.rds" %in% list.files("Cache")){
-   source("./preparation.R")
+   cat("\x1b[33mRunning prep. script\x1b[0m\n")
+   source("scripts/preparation.R")
+} else {
+   cat("\x1b[35mUsing cached prepared data\x1b[0m\n")
 }
 
 data <- readRDS("Cache/prepped_data.rds")
@@ -53,11 +56,13 @@ VARIABLE_NAMES <- yaml.load_file("vnames.yaml")
 # This saves time on repeated calls.
 memoize <- function(call,file){
    if(!file.exists(file)){
+      cat(glue("\x1b[33mEvaluating model 4 {file}\x1b[0m\n\n"))
       res <- eval(call)
       saveRDS(res,file)
       res
 
    } else {
+      cat(glue("\x1b[35mUsing cache 4 {file}\x1b[0m\n\n"))
       readRDS(file)
 
    }
@@ -100,6 +105,7 @@ model <- function(data,
    time <- switch(timectrl,
       decay = "{maj}decay_c_term_short",
       polynomials = c("{maj}timesince","{maj}timesince_sq","{maj}timesince_cb"),
+      poly_norm = c("{maj}timesince_norm","{maj}timesince_sq_norm","{maj}timesince_cb_norm"),
       splines = "bs({maj}timesince,knots = c(1,4,7))",
       ceiling = c("timesince_tr","timesince_tr_sq","timesince_tr_cb")
       ) %>% sapply(glue)
@@ -127,17 +133,13 @@ model <- function(data,
       )
 
       if(re != "none"){
-         args$control <- glmerControl(optimizer = "Nelder_Mead")
-      }
-
-      if(re == "none"){
-         m <- do.call(glm, args)
-         coeftest(m, vcov = vcovHC(m, type = "HC0", cluster = "gwno"))
-      } else {
-         do.call(glmer, args)
+         args$control <- glmerControl(
+            optimizer = "Nelder_Mead",
+            optCtrl=list(maxfun=100000)
+            )
       }
       
-      #do.call(ifelse(re == "none",glm, glmer), args)
+      do.call(ifelse(re == "none",glm, glmer), args)
    })
 }
 
@@ -150,7 +152,7 @@ partial_regular <- call("model",partial_data,timectrl="polynomials") %>%
 full_regular <- call("model",data,timectrl="polynomials") %>%
    memoize("Cache/full_regular.rds")
 
-country_re <- call("model",partial_data,re = "country",timectrl="polynomials") %>%
+country_re <- call("model",partial_data,re = "country",timectrl="poly_norm") %>%
    memoize("Cache/country_random_effects.rds")
 
 #year_re <- call("model",partial_data,re = "time") %>%
@@ -159,7 +161,7 @@ country_re <- call("model",partial_data,re = "country",timectrl="polynomials") %
 #either_re <- call("model", partial_data, re = "both") %>%
 #   memoize("Cache/either_random_effects.rds")
 
-table_1 <- texreg(c(partial_regular,country_re,full_regular),
+table_1 <- clusteredTexreg(c(partial_regular,country_re,full_regular),
    custom.model.names = c(
       "Log. A",
       "Log. B",
@@ -176,6 +178,29 @@ table_1 <- texreg(c(partial_regular,country_re,full_regular),
 writeLines(stripenv(table_1), "Out/table_1.tex")
 
 # ================================================
+# Show table w. normalized n-since 
+
+partial_regular_norm <- call("model",partial_data,timectrl="poly_norm") %>%
+   memoize("Cache/regular_norm.rds")
+
+full_regular_norm <- call("model",data,timectrl="poly_norm") %>%
+   memoize("Cache/full_regular_norm.rds")
+
+norm_test <- clusteredTexreg(c(partial_regular_norm,full_regular_norm),
+   custom.model.names = c(
+      "Norm A",
+      "Norm B",
+      "Full norm A",
+      "Full norm B"
+   ),
+   custom.coef.map = VARIABLE_NAMES,
+   caption = "",
+   stars = c(0.01,0.05,0.1),
+   digits = 3)
+
+writeLines(stripenv(norm_test), "Out/normalized.tex")
+
+# ================================================
 # TABLE 2 (Time controls)
 
 decay <- call("model",partial_data) %>%
@@ -187,7 +212,7 @@ splines <- call("model",partial_data,timectrl = "splines") %>%
 ceiling <- call("model",partial_data,timectrl = "ceiling") %>%
    memoize("Cache/ceiling.rds")
 
-timetable <- texreg(c(decay,splines,ceiling),
+timetable <- clusteredTexreg(c(decay,splines,ceiling),
    custom.coef.map = VARIABLE_NAMES,
    caption = "",
    stars = c(0.01,0.05,0.1),
@@ -211,7 +236,7 @@ major_partial_regular <- call("model",partial_data,major=TRUE,timectrl="polynomi
 major_full_regular <- call("model",data,major=TRUE,timectrl="polynomials") %>%
    memoize("Cache/major_full_regular.rds")
 
-major_country_re <- call("model",partial_data,re = "country",major=TRUE,timectrl="polynomials") %>%
+major_country_re <- call("model",partial_data,re = "country",major=TRUE,timectrl="poly_norm") %>%
    memoize("Cache/major_country_random_effects.rds")
 
 #major_year_re <- call("model",partial_data,re = "time",major=TRUE) %>%
@@ -220,7 +245,7 @@ major_country_re <- call("model",partial_data,re = "country",major=TRUE,timectrl
 #major_either_re <- call("model", partial_data, re = "both",major=TRUE) %>%
    #memoize("Cache/major_either_random_effects.rds")
 
-majortable <- texreg(c(major_partial_regular,major_country_re,major_full_regular),
+majortable <- clusteredTexreg(c(major_partial_regular,major_country_re,major_full_regular),
    custom.model.names = c(
       "Log. A",
       "Log. B",
@@ -253,7 +278,7 @@ sevenskip <- call("model",partial_data,tolerance=7,timectrl="polynomials") %>%
 tenskip <- call("model",partial_data,tolerance=10,timectrl="polynomials") %>%
    memoize("Cache/tenskip.rds")
 
-skiptable <- texreg(c(noskip,fourskip,sevenskip,tenskip),
+skiptable <- clusteredTexreg(c(noskip,fourskip,sevenskip,tenskip),
    custom.model.names = c(
       "Skip 0 A",
       "Skip 0 B",

@@ -4,6 +4,46 @@ suppressPackageStartupMessages(library(magrittr))
 suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(stringr))
 
+#' makeChangeDecay
+#'
+
+makeChangeDecay <- function(variable,threshold = 0.1){
+   compfun <- ifelse(threshold > 0,`>`,`<`)
+   change <- variable - offset(variable)
+   thresh <- as.numeric(compfun(change,threshold))
+   decay <- offset(halflife(2)(nsince(thresh)))
+   ifelse(is.na(decay),0,decay)
+}
+
+
+#' clusteredTexreg
+#'
+#' Convenience function that replaces standard standard errors with
+#' clustered standard errors for regular glm models (not glmer models).
+clusteredTexreg <- function(...){
+   models <- ..1
+
+   clusteredVcov <- function(m){
+      vcovHC(m, type = "HC0")#, cluster = "gwno")
+   }
+
+   tests <- lapply(models, function(model){
+      cluster <- !"glmerMod" %in% class(model)
+
+      if(cluster){
+         coeftest(model,clusteredVcov)
+      } else {
+         summary(model)$coefficients
+      }
+   })
+
+   args <- c(list(...),list(
+      override.se = lapply(tests, function(t) t[,2]),
+      override.pvalues = lapply(tests, function(t) t[,4])
+   ))
+   do.call(texreg,args)
+}
+
 #' makeOnset 
 #' 
 #' Creates a 1-lagged decay variable

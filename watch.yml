@@ -1,0 +1,3 @@
+# THIS IS AN EXAMPLE FILE
+- filetype: .R
+  call: bash main.sh 

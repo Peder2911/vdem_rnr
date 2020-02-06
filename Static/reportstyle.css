@@ -1,0 +1,11 @@
+tr:nth-child(even){
+   background: #242b3d;
+}
+tr:nth-child(odd){
+   background: #343a4b;
+}
+body {
+   background:#0d0d12;
+   color:#eeedf2;
+   font-family:"monaco", monospace
+}

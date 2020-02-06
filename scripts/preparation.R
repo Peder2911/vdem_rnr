@@ -34,7 +34,7 @@ source("functions.R")
 # ================================================
 # CONSTANTS ======================================
 
-CACHEFILE <- "cached.rds"
+CACHEFILE <- "prepped_data.rds"
 VERBOSE <- TRUE
 
 # ================================================
@@ -64,6 +64,11 @@ if(!CACHEFILE %in% currentCache){
 
          # Control variables
          lnpop200, lnGDPPerCapita200, 
+
+      
+         # Special controls
+         grGDPPercapita200, lnGDPcap_oilrent, ltimeindep,
+
 
          #===================================================
          v2x_elecreg,
@@ -99,6 +104,10 @@ if(!CACHEFILE %in% currentCache){
          # Polity score (alternative hyp.)
          polity = polity2,
 
+         #===================================================
+         # Region name (for dummies) 
+         region_name
+
       ) 
 
    fearon_laitin <- read_dta("SuppData/repdata.dta") %>%
@@ -123,7 +132,7 @@ if(!CACHEFILE %in% currentCache){
 # ===================================================
 # Variable gen. 
 
-# Time-series specific variables, needing grouping
+# Conflict variables
 
 dat <- dat %>%
    mutate(
@@ -135,6 +144,8 @@ dat <- dat %>%
       nbConflict = as.numeric(nb_conflict != 0),
       major_nbConflict = as.numeric(nb_conflict == 2)
    )
+
+# Time-series specific variables, needing grouping
 
 dat <- dat %>%
    group_by(gwno) %>%
@@ -162,10 +173,11 @@ dat <- dat %>%
       timesince_sq = timesince ^ 2,
       timesince_cb = timesince ^ 3,
 
-      # Rescale time since conflict to fix convergence issue
-      timesince = timesince / max(timesince,na.rm = T),
-      timesince_sq = timesince_sq / max(timesince_sq,na.rm = T),
-      timesince_cb = timesince_cb / max(timesince_cb,na.rm = T),
+      # Rescaling time since conflict to fix a convergence issue.
+      # This is shown in the appendix
+      timesince_norm = timesince * 0.0001, #/ max(timesince,na.rm = T),
+      timesince_sq_norm = timesince_sq * 0.0001, #/ max(timesince_sq,na.rm = T),
+      timesince_cb_norm = timesince_cb * 0.0001, #/ max(timesince_cb,na.rm = T),
 
       major_c_onset = makeOnset(majorConflict),
       major_c2_onset = makeOnset(majorConflict,tolerance = 1),
@@ -181,9 +193,9 @@ dat <- dat %>%
       major_timesince_cb = major_timesince ^ 3,
 
       # Rescale time since conflict to fix convergence issue
-      major_timesince = major_timesince / max(major_timesince,na.rm = T),
-      major_timesince_sq = major_timesince_sq / max(major_timesince_sq,na.rm = T),
-      major_timesince_cb = major_timesince_cb / max(major_timesince_cb,na.rm = T),
+      major_timesince_norm = major_timesince * 0.0001, #/ max(major_timesince,na.rm = T),
+      major_timesince_sq_norm = major_timesince_sq * 0.0001,  #...
+      major_timesince_cb_norm = major_timesince_cb * 0.0001,  #...
 
       # ============================================== 
       # Vertical constraints 
@@ -196,6 +208,10 @@ dat <- dat %>%
       v2elvotbuy = fixElvar(v2elvotbuy,v2x_elecreg),
       v2elirreg = fixElvar(v2elirreg,v2x_elecreg),
       v2elfrfair = fixElvar(v2elfrfair,v2x_elecreg),
+
+      # Do some censoring based on "last active thresh" with
+      # lastseen.
+
       ) %>%
    ungroup()
 
@@ -205,6 +221,7 @@ dat <- dat %>%
 
 dat <- dat %>%
    mutate(
+
       # ============================================== 
       # Vertical constraints 
       # ============================================== 
@@ -255,6 +272,29 @@ dat <- dat %>%
       # Other 
       # ============================================== 
       cowyear = as.numeric(year <= 1945), 
+
+      # ============================================== 
+      # Decades and regions 
+      # ============================================== 
+      # Fixing every-other-year variables by sustaining
+      # if NA. v2x_elecreg determines whether or not to
+      # replace missing values.
+
+      dec_40 = as.numeric(year >= 1940 & year < 1950),
+      dec_50 = as.numeric(year >= 1950 & year < 1960),
+      dec_60 = as.numeric(year >= 1960 & year < 1970),
+      dec_70 = as.numeric(year >= 1970 & year < 1980),
+      dec_80 = as.numeric(year >= 1980 & year < 1990),
+      dec_90 = as.numeric(year >= 1990 & year < 2000),
+      dec_00 = as.numeric(year >= 2000 & year < 2010),
+
+      # Avoid using all dummies? 
+      #dec_10 = as.numeric(year >= 2010 & year < 2020),
+
+      reg_southam = as.numeric(region_name %in% paste(c("Central","South"),"America")),
+      reg_ssafrica = as.numeric(region_name %in% paste(c("West","East","Southern"),"Africa")),
+      reg_seasia = as.numeric(region_name %in% paste(c("Central","East","South"),"Asia")),
+      reg_mena = as.numeric(region_name == "MENA")
    )
 
 # ================================================
@@ -267,8 +307,26 @@ dat <- dat %>%
       llnpop200 = offset(lnpop200,1),
       llnGDPPerCapita200 = offset(lnGDPPerCapita200 ,1),
       lfree_fair_elections = offset(free_fair_elections,1),
-      lhorizontal_constraint_narrow = offset(horizontal_constraint_narrow,1)
-   ) %>%
-   ungroup()
+      lfree_fair_elections_sq = lfree_fair_elections ^ 2,
+      lhorizontal_constraint_narrow = offset(horizontal_constraint_narrow, 1),
+      lhorizontal_constraint_narrow_sq = lhorizontal_constraint_narrow ^ 2,
+
+      lgrGDPPerCapita200 = offset(grGDPPercapita200,1), 
+      llnGDPcap_oilrent = offset(lnGDPcap_oilrent,1),
+
+      # ============================================== 
+      # Time since democratic / authoritarian change 
+      # ============================================== 
+      # Fixing every-other-year variables by sustaining
+      # if NA. v2x_elecreg determines whether or not to
+      # replace missing values.
+
+      ff_dem = makeChangeDecay(lfree_fair_elections,0.1),
+      ff_aut = makeChangeDecay(lfree_fair_elections,-0.1),
+
+      hc_dem = makeChangeDecay(lhorizontal_constraint_narrow,0.1),
+      hc_aut = makeChangeDecay(lhorizontal_constraint_narrow,-0.1),
+
+      )
 
 saveRDS(dat,"Cache/prepped_data.rds")
