@@ -102,6 +102,10 @@ model <- function(data,
       "{maj}nbConflict"
    ) %>% sapply(glue)
 
+   if(min(data$year) < 1946){
+      controls <- c(controls,"post46")
+   }
+
    time <- switch(timectrl,
       decay = "{maj}decay_c_term_short",
       polynomials = c("{maj}timesince","{maj}timesince_sq","{maj}timesince_cb"),

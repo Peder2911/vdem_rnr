@@ -247,9 +247,9 @@ dat <- dat %>%
       # Polity scores
       # ============================================== 
 
-      xconst = ifelse(xconst == -10, NA, xconst),
-      xropen = ifelse(xropen == -10, NA, xropen),
-      xrcomp = ifelse(xrcomp == -10, NA, xrcomp),
+      xconst = ifelse(xconst < -10, NA, xconst),
+      xropen = ifelse(xropen < -10, NA, xropen),
+      xrcomp = ifelse(xrcomp < -10, NA, xrcomp),
       x_polity = (xconst + xropen + xrcomp) - 7,
       x_polity_sq = x_polity^2,
 
@@ -294,7 +294,10 @@ dat <- dat %>%
       reg_southam = as.numeric(region_name %in% paste(c("Central","South"),"America")),
       reg_ssafrica = as.numeric(region_name %in% paste(c("West","East","Southern"),"Africa")),
       reg_seasia = as.numeric(region_name %in% paste(c("Central","East","South"),"Asia")),
-      reg_mena = as.numeric(region_name == "MENA")
+      reg_mena = as.numeric(region_name == "MENA"),
+
+      # Pre46 
+      post46 = as.numeric(year >= 1946)
    )
 
 # ================================================
@@ -330,3 +333,4 @@ dat <- dat %>%
       )
 
 saveRDS(dat,"Cache/prepped_data.rds")
+writeLines("Done!")

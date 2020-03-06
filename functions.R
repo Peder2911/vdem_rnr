@@ -24,7 +24,8 @@ clusteredTexreg <- function(...){
    models <- ..1
 
    clusteredVcov <- function(m){
-      vcovHC(m, type = "HC0")#, cluster = "gwno")
+      #vcovHC(m, type = "HC0")#, cluster = "gwno")
+      vcovCL(m,cluster=~gwno)
    }
 
    tests <- lapply(models, function(model){

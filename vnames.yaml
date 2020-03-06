@@ -59,10 +59,11 @@ dec_90: "1990s"
 dec_00: "2000s"
 dec_10: "2010s"
 
+post46: "Post 1946"
+
 reg_southam: "South/Central America"
 reg_ssafrica: "Sub-Saharan Africa"
 reg_seasia: "South/East/Central Asia"
 reg_mena: "Middle east / North Africa"
 
 (Intercept):  "(Intercept)"
-
