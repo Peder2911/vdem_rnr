@@ -21,6 +21,18 @@ countryCl <- function(...){
    sandwich::vcovCL(..., cluster = ~gwno)
 }
 
+addInteractions <- function(data,x,y){
+   data[[paste0(x,"_sq")]] <- data[[x]]^2 
+   data[[paste0(x,"_cb")]] <- data[[x]]^3
+   data[[paste0(x,":",y)]] <- data[[x]] * data[[y]]
+   data[[paste0(y,":",x)]] <- data[[paste0(x,":",y)]]
+
+   data$timesince_sq <- data$timesince ^ 2
+   data$timesince_cb <- data$timesince ^ 3
+   data$x_polity_sq <- data$x_polity ^ 2
+   data
+}
+
 # =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
 # Figure 3 %=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
 # =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
@@ -45,14 +57,15 @@ figure_3_marg <- function(data,model,x,y){
    testset <- makeTestSet(data,variables,mean)
 
    # adding interaction terms
-   testset[[paste0(xname,"_sq")]] <- testset[[xname]]^2 
-   testset[[paste0(xname,"_cb")]] <- testset[[xname]]^3
-   testset[[paste0(xname,":",yname)]] <- testset[[xname]] * testset[[yname]]
-   testset[[paste0(yname,":",xname)]] <- testset[[paste0(xname,":",yname)]]
+   testset <- addInteractions(testset,xname,yname)
+   #testset[[paste0(xname,"_sq")]] <- testset[[xname]]^2 
+   #testset[[paste0(xname,"_cb")]] <- testset[[xname]]^3
+   #testset[[paste0(xname,":",yname)]] <- testset[[xname]] * testset[[yname]]
+   #testset[[paste0(yname,":",xname)]] <- testset[[paste0(xname,":",yname)]]
 
-   testset$timesince_sq <- testset$timesince ^ 2
-   testset$timesince_cb <- testset$timesince ^ 3
-   testset$x_polity_sq <- testset$x_polity ^ 2
+   #testset$timesince_sq <- testset$timesince ^ 2
+   #testset$timesince_cb <- testset$timesince ^ 3
+   #testset$x_polity_sq <- testset$x_polity ^ 2
 
    cbind(testset,sim(testset,model,10000,vcov = countryCl))
 }
@@ -100,4 +113,19 @@ plots[c(5,6,1,2)] %>%
    blitout("Out/model6_sim.pdf")
 plots[c(7,8,3,4)] %>%
    blitout("Out/model7_sim.pdf")
+
+# =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
+# Writeout for cubeplot
+
+RES <- 100
+
+m <- readRDS("Cache/t3pol_model_7.rds")
+testset <- makeTestSet(partial,list(
+   lfree_fair_elections = seq(0,1,length.out=RES),
+   lhorizontal_constraint_narrow = seq(0,1,length.out=RES)
+   ),mean)
+testset <- addInteractions(testset,"lfree_fair_elections","lhorizontal_constraint_narrow")
+testset <- cbind(testset,sim(testset,m,vcov = countryCl))
+write.csv(testset,"Cache/simulations.csv")
+
 
