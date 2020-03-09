@@ -37,12 +37,12 @@ def makeCubePlot(data,out):
 
         values = {k:castAsMatrix(v) for k,v in values.items()}
 
-        ls = LightSource(0,0)
-        rgb = ls.shade(values["Z"], plt.get_cmap("cividis"),
-            blend_mode="soft",vert_exag = -6)
+        ls = LightSource()
+        rgb = ls.shade(values["Z"], plt.get_cmap("gray"),
+            blend_mode="soft")
 
         plt3d.plot_surface(**values,alpha=alpha,
-            facecolors = rgb,linewidth =.3,shade = False)
+            facecolors = rgb,linewidth =1,shade = False)
 
     ax = plt.gca()
     ax.set_xlabel("Vertical Constraints")
@@ -64,8 +64,8 @@ def makeCubePlot(data,out):
 
 if __name__ == "__main__":
     tasks = [
-        ("Cache/t3_model_7.rds.simulations.csv","Cache/t3_model_7_cube_{angle}.svg"),
-        ("Cache/t3_model_6.rds.simulations.csv","Cache/t3_model_6_cube_{angle}.svg"),
+        ("Cache/t3_model_7.rds.simulations.csv","Out/t3_model_7_cube_{angle}.pdf"),
+        ("Cache/t3_model_6.rds.simulations.csv","Out/t3_model_6_cube_{angle}.pdf"),
     ]
     for infile,outfile in tasks:
         print(f"Doing {infile}")
