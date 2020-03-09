@@ -8,124 +8,114 @@ library(gridExtra)
 suppressPackageStartupMessages(library(dplyr))
 
 # =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
-NHOR <- 100 
+RES <- 100 
+NSIM <- 10000
+
+# =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
+
 logitToProb <- function(x) exp(x) / (1+exp(x))
+
+countryCl <- function(...){
+   sandwich::vcovCL(..., cluster = ~gwno)
+}
+
+margPlot <- function(data,x,y,margins,labs){
+   x <- enquo(x)
+   y <- enquo(y)
+
+   data %>%
+      filter(!!y %in% margins) %>%
+      ggplot(aes(x=!!x, y=sim_mean, 
+         color = factor(!!y),fill = factor(!!y)))+
+         geom_line() +
+         geom_ribbon(aes(ymin = sim_lower, ymax = sim_upper), alpha = 0.3,size = 0) +
+         scale_fill_discrete(guide = "none") +
+         theme(legend.position = "bottom") +
+         labs
+}
+
+margPlotSet <- function(simdata, origdata, name){
+   lfree_marg <- quantile(origdata$lfree_fair_elections,c(0.25,0.75),na.rm = T) %>%
+      round(1)
+   lhorizontal_marg <- quantile(origdata$lhorizontal_constraint_narrow,c(0.25,0.75),na.rm = T) %>%
+      round(1)
+
+   title <- name 
+   list(
+      margPlot(simdata, lfree_fair_elections, lhorizontal_constraint_narrow,
+         lfree_marg, labs(
+            #title = title, 
+            x = "Vertical Constraints",
+            color = "Horizontal Constraints",
+            y = "P (Conflict onset)"
+         )),
+      margPlot(simdata, lhorizontal_constraint_narrow, lfree_fair_elections,
+         lhorizontal_marg, labs(
+            #title = title, 
+            x = "Horizontal Constraints",
+            color = "Vertical Constraints",
+            y = "P (Conflict onset)"
+         ))
+   )
+}
+
+saveSet <- function(...,name){
+   set <- margPlotSet(...,name = name)
+   set$nrow <- 1
+   ggsave(glue("/tmp/v/{name}"),do.call(grid.arrange,set),device = "png",
+      height = 4, width = 8)
+}
+
 
 # =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
 
 dat <- readRDS("Cache/prepped_data.rds")
 partial <- dat[dat$year >= 1946,]
 
-# =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
-countryCl <- function(...){
-   sandwich::vcovCL(..., cluster = ~gwno)
-}
-
-addInteractions <- function(data,x,y){
-   data[[paste0(x,"_sq")]] <- data[[x]]^2 
-   data[[paste0(x,"_cb")]] <- data[[x]]^3
-   data[[paste0(x,":",y)]] <- data[[x]] * data[[y]]
-   data[[paste0(y,":",x)]] <- data[[paste0(x,":",y)]]
-
-   data$timesince_sq <- data$timesince ^ 2
-   data$timesince_cb <- data$timesince ^ 3
-   data$x_polity_sq <- data$x_polity ^ 2
-   data
-}
-
-# =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
-# Figure 3 %=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
-# =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
-# This figure shows the marginal effect of a variable, given
-# a range of values on another variable.
-
-#' @title figure_3_marg
-#' @description Show marginal change in x for different values of y
-figure_3_marg <- function(data,model,x,y){
-   mchange <- function(v){
-      v[2]-v[1]
-   }
-
-   xname <- as.character(substitute(x))
-   yname <- as.character(substitute(y))
-
-   variables <- list()
-   variables[[xname]] <- seq(0,1,length.out = 100) 
-   variables[[yname]] <- quantile(data[[yname]],c(0.25,0.75),na.rm =T) %>% 
-      round(digits = 2)
-
-   testset <- makeTestSet(data,variables,mean)
-
-   # adding interaction terms
-   testset <- addInteractions(testset,xname,yname)
-   #testset[[paste0(xname,"_sq")]] <- testset[[xname]]^2 
-   #testset[[paste0(xname,"_cb")]] <- testset[[xname]]^3
-   #testset[[paste0(xname,":",yname)]] <- testset[[xname]] * testset[[yname]]
-   #testset[[paste0(yname,":",xname)]] <- testset[[paste0(xname,":",yname)]]
-
-   #testset$timesince_sq <- testset$timesince ^ 2
-   #testset$timesince_cb <- testset$timesince ^ 3
-   #testset$x_polity_sq <- testset$x_polity ^ 2
-
-   cbind(testset,sim(testset,model,10000,vcov = countryCl))
-}
-
-figure_3_marg_plt<- function(dat,x,y,labs){
-   x <- enquo(x)
-   y <- enquo(y)
-   ggplot(dat,aes(!!x,logitToProb(sim_mean),color=factor(!!y))) +
-      geom_ribbon(aes(
-         ymin=logitToProb(sim_lower),ymax=logitToProb(sim_upper),
-         fill = factor(!!y)),alpha = 0.2,size = 0) + 
-      geom_line() +
-      #scale_y_continuous(limit = c(0,.5)) +
-      scale_fill_discrete(guide = "none") + 
-      theme(legend.position="bottom") +
-      labs
-}
-
-plotFromModel <- function(data,modelfile,title){
-   m <- readRDS(modelfile)
-
-   list( 
-      figure_3_marg(data,m,lhorizontal_constraint_narrow,lfree_fair_elections) %>%
-         figure_3_marg_plt(lhorizontal_constraint_narrow,lfree_fair_elections,
-            labs = labs(y="P(Conflict onset)",x="Horizontal constraints",color="Vertical constraints",subtitle=title)),
-      figure_3_marg(data,m,lfree_fair_elections,lhorizontal_constraint_narrow) %>%
-         figure_3_marg_plt(lfree_fair_elections,lhorizontal_constraint_narrow,
-            labs = labs(y="P(Conflict onset)",x="Vertical constraints",color="Horizontal constraints",subtitle=title))
-   )
-}
-
-plots <- c(
-   plotFromModel(partial,"Cache/t3pol_model_6.rds","Model 6 w/. polity"),
-   plotFromModel(partial,"Cache/t3pol_model_7.rds","Model 7 w/. polity"),
-   plotFromModel(partial,"Cache/t3_model_6.rds","Model 6"),
-   plotFromModel(partial,"Cache/t3_model_7.rds","Model 7")
+models <- c(
+   "t3pol_model_6.rds",
+   "t3_model_7.rds",
+   "t3pol_model_7.rds",
+   "t3_model_6.rds"
 )
 
-blitout <- function(what,where){
-   ggsave(where,do.call(grid.arrange,what),device = "pdf",
-      height = 6, width = 6)
+for (model in models) {
+   simfile <- paste0(model,".simulations.csv")
+   simfilePath <- file.path("Cache",simfile)
+   if(simfile %in% list.files("Cache")){
+      writeLines(glue("Using cache for {model} simulations"))
+      simset <- read.csv(simfilePath, stringsAsFactors = FALSE)
+   } else {
+      writeLines(glue("Caching {model} simulations"))
+      m <- readRDS(file.path("Cache",model))
+
+      xvar <- "lhorizontal_constraint_narrow"
+      yvar <- "lfree_fair_elections"
+
+      variables <- list()
+      variables[[xvar]] <- seq(0,1,length.out=RES+1)
+      variables[[yvar]] <- seq(0,1,length.out=RES+1) 
+
+
+      simset <- makeTestSet(partial,variables,mean)
+
+      simset[[paste(xvar,yvar,sep=":")]] <- simset[[xvar]] * simset[[yvar]] 
+      simset[[paste(yvar,xvar,sep=":")]] <- simset[[xvar]] * simset[[yvar]] 
+      simset[[paste0(xvar,"_sq")]] <- simset[[xvar]] ^ 2
+      simset[[paste0(yvar,"_sq")]] <- simset[[yvar]] ^ 2
+
+      simset$timesince_sq <- simset$timesince ^ 2
+      simset$timesince_cb <- simset$timesince ^ 3
+      simset$x_polity_sq <- simset$x_polity ^ 2
+
+      simset <- cbind(simset,sim(simset,m,vcov = countryCl))
+      simset$sim_mean <- logitToProb(simset$sim_mean)
+      simset$sim_upper <- logitToProb(simset$sim_upper)
+      simset$sim_lower <- logitToProb(simset$sim_lower)
+
+      write.csv(simset,simfilePath,row.names = FALSE)
+   }
+   saveSet(simset,partial,name=paste0(model,".png"))
 }
 
-plots[c(5,6,1,2)] %>%
-   blitout("Out/model6_sim.pdf")
-plots[c(7,8,3,4)] %>%
-   blitout("Out/model7_sim.pdf")
-
-# =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
-# Writeout for cubeplot
-
-RES <- 100
-
-m <- readRDS("Cache/t3pol_model_7.rds")
-testset <- makeTestSet(partial,list(
-   lfree_fair_elections = seq(0,1,length.out=RES),
-   lhorizontal_constraint_narrow = seq(0,1,length.out=RES)
-   ),mean)
-testset <- addInteractions(testset,"lfree_fair_elections","lhorizontal_constraint_narrow")
-testset <- cbind(testset,sim(testset,m,vcov = countryCl))
-write.csv(testset,"Cache/simulations.csv")
-
-
+writeLines("Done!")
