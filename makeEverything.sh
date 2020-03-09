@@ -18,3 +18,9 @@ for F in scripts/!(preparation|regular).R
       echo "Running $F"
       Rscript $F
    done
+
+for F in scripts/*.py
+   do
+      echo "Running $F"
+      python3 $F
+   done
