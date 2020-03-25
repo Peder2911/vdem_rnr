@@ -65,4 +65,4 @@ rocCurve <- ggplot(curves, aes(x=fallout,y=recall,color=type)) +
    
 
 ggsave("Out/roc_comparison.pdf", rocCurve, 
-   device = "pdf", height = 6, width = 6) 
+   device = "pdf", height = 9, width = 9) 

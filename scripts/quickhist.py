@@ -37,7 +37,6 @@ def completerow(row):
 #complete = data.apply(completerow,1)
 data = data[data.apply(completerow,1)]
 data = data[data.year > 1945]
-print(data.shape)
 
 hist = lambda dat: plt.hist(dat, width = 0.01, bins = 100)
 cathist = lambda dat: plt.hist(dat, bins = 2)
