@@ -13,7 +13,12 @@ Rscript scripts/preparation.R
 echo "Running \"Regular\" table"
 Rscript scripts/regular.R
 
-for F in scripts/!(preparation|regular).R
+echo "Running table_2"
+Rscript scripts/table_2.R
+echo "Running table_3"
+Rscript scripts/table_3.R
+
+for F in scripts/!(preparation|regular|table_2|table_3).R
    do
       echo "Running $F"
       Rscript $F
