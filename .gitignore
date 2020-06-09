@@ -4,6 +4,7 @@
 
 InputData/*
 !InputData/manifest
+
 SuppData/*
 !SuppData/manifest
 
@@ -31,3 +32,5 @@ views
 *.swp
 *.pdf
 
+
+venv/
