@@ -17,7 +17,7 @@ Tables/original/*
 !Tables/original/manifest
 
 Out/*
-!Out/manifest
+!Out/.gitkeep
 
 random/*
 depr/*
