@@ -3,13 +3,9 @@
 
 Reproduction and update of analysis from an upcoming article.
 
-Depends on [this library](http://github.com/peder2911/timelib).
+Depends on packages found in `requirements.txt` and `r_packages.txt`.  The
+packages [timelib](https://github.com/peder2911/timelib) and
+[evallib](https://github.com/peder2911/evallib) are not on CRAN, but can easily
+be installed from github using `devtools::install_github`.
 
-There are several scripts, that must be run in succession. Each script
-populates the cache folder with data objects that can then be used to create
-tables and plots.
-
-main.R creates several tables, both table_1 and tables included in the
-appendix. battledeaths.R creates the model /table of battledeath predictions,
-while ISROC creates the in-sample ROC plot.
-
+Run `makeEverything.sh` after installing packages. This script runs everything else.
