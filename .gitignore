@@ -5,8 +5,8 @@
 InputData/*
 !InputData/manifest
 
-SuppData/*
-!SuppData/manifest
+Data/*
+!Data/manifest
 
 Cache/*
 !Cache/.gitkeep

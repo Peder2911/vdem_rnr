@@ -14,7 +14,7 @@ shh(library(yaml))
 source("functions.R")
 
 if(!"ged.rds" %in% list.files("Cache")){
-   c <- dbConnect(SQLite(),"SuppData/ged191.sqlite")
+   c <- dbConnect(SQLite(),"Data/ged191.sqlite")
    ged <- dbGetQuery(c,"SELECT * FROM ged")
 
 VARIABLE_NAMES <- yaml.load_file("vnames.yaml")
