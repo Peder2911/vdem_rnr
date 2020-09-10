@@ -5,7 +5,7 @@ import subprocess
 from io import StringIO
 import os
 
-DIR = "/tmp/"
+DIR = "Out"
 EXT = ".pdf"
 plt.style.use("ggplot")
 
