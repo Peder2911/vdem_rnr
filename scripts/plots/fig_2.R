@@ -11,6 +11,11 @@ suppressPackageStartupMessages(library(dplyr))
 RES <- 100 
 NSIM <- 100000
 
+VARNAMES <- c(
+              lfree_fair_elections = "Vertical Constraints", 
+              lhorizontal_constraint_narrow="Horizontal Constraints"
+   )
+
 # =%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%=%
 
 logitToProb <- function(x) exp(x) / (1+exp(x))
@@ -23,14 +28,15 @@ margPlot <- function(data){
    data %>%
       ggplot(aes(x=xvar, y=sim_mean))+
          geom_line() +
-         geom_ribbon(aes(ymin = sim_lower, ymax = sim_upper), alpha = 0.3,size = 0) +
+         theme_classic() +
+         geom_ribbon(aes(ymin = sim_lower, ymax = sim_upper), alpha = 0,size = 1,linetype="dashed",color="darkgray") +
          scale_fill_discrete(guide = "none") +
          theme(legend.position = "bottom") 
 }
 
-margPlotFn <- function(simdata, origdata, name){
-   margPlot(simdata)
-}
+#margPlotFn <- function(simdata, origdata, name){
+#   margPlot(simdata)
+#}
 
 saveSet <- function(...,name){
    ggsave(glue("Out/{name}"),margPlotFn(...,name=name),device = "pdf",
@@ -48,6 +54,7 @@ saveSet <- function(...,name){
       list(file="t3_model_5.rds",var="lhorizontal_constraint_narrow")
    )
 
+   plots <- list()
    for (model in models) {
       print(model)
       m <- readRDS(file.path("Cache",model$file))
@@ -60,21 +67,17 @@ saveSet <- function(...,name){
       simset$timesince_sq <- simset$timesince ^ 2
       simset$timesince_cb <- simset$timesince ^ 3
       simset$x_polity_sq <- simset$x_polity ^ 2
-      print(length(coef(m)))
-      print(dim(countryCl(m)))
 
-      print("yeehaw")
-
-      simset <- cbind(simset,sim(simset,m,vcov=countryCl))
+      simset <- cbind(simset,sim(simset,m,vcov=countryCl,n=NSIM))
       simset$sim_mean <- logitToProb(simset$sim_mean)
       simset$sim_upper <- logitToProb(simset$sim_upper)
       simset$sim_lower <- logitToProb(simset$sim_lower)
       simset$xvar <- simset[[model$var]]
 
-      #write.csv(simset,simfilePath,row.names = FALSE)
       modelname <- gsub("\\..*$","",model$file)
       writeLines(glue("Saving {modelname}"))
-      saveSet(simset,partial,name=paste0(modelname,".pdf"))
+      plots[[modelname]] <- margPlot(simset) + labs(y = "Pr(y)",x=VARNAMES[model$var])
    }
-
-   writeLines("Done!")
+   plots$nrow<-1
+   arrangement <- do.call(grid.arrange,plots)
+   ggsave("Out/fig_2.pdf",arrangement,height=4,width=12)

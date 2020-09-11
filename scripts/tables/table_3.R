@@ -45,10 +45,11 @@ models <- lapply(
       c("lhorizontal_constraint_narrow",polity),
       c("lfree_fair_elections","lfree_fair_elections_sq"),
       c("lhorizontal_constraint_narrow","lhorizontal_constraint_narrow_sq"),
-      c("lfree_fair_elections*lhorizontal_constraint_narrow"),
-      c("lhorizontal_constraint_narrow_sq",
-        "lfree_fair_elections_sq",
-        "lfree_fair_elections*lhorizontal_constraint_narrow")),
+      c("lfree_fair_elections*lhorizontal_constraint_narrow")
+      #c("lhorizontal_constraint_narrow_sq",
+      #  "lfree_fair_elections_sq",
+      #  "lfree_fair_elections*lhorizontal_constraint_narrow")),
+      ),
    data = data,
    model
 )
@@ -67,12 +68,28 @@ tbl <- clusteredTexreg(models,
       "3",
       "4",
       "5",
-      "6",
-      "7"
+      "6"
+      #"7"
    ),
    digits = 3)
 
 writeLines(stripenv(tbl),"Out/table_3.tex")
+
+# ========================================================
+# Table 3 col. 7 for appendix A-2
+
+app <- model(c("lhorizontal_constraint_narrow_sq", "lfree_fair_elections_sq",
+        "lfree_fair_elections*lhorizontal_constraint_narrow"), data = data)
+saveRDS(app,"Cache/t3_model_7.rds")
+
+tbl <- clusteredTexreg(list(app),
+   custom.coef.map = VARIABLE_NAMES,
+   caption = "",
+   stars = c(0.01,0.05,0.1),
+   custom.model.names = c(
+      "1"),digits = 3)
+
+writeLines(stripenv(tbl),"Out/table_A_2.tex")
 
 # ========================================================
 # Table 3 with polity controls (appendix) 
@@ -91,7 +108,6 @@ models <- lapply(
         "lfree_fair_elections_sq",
         "lfree_fair_elections*lhorizontal_constraint_narrow",
         polity)
-
    ),
    data = data,
    model
