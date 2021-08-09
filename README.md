@@ -1,6 +1,6 @@
 # VDEM institutions RNR
 
-Reproduction code for Fjelde et. al 2021 (https://doi.org/10.1093/isq/sqaa076)
+Replication code for Fjelde et. al 2021 (https://doi.org/10.1093/isq/sqaa076)
 
 Depends on packages found in `requirements.txt` and `r_packages.txt`.  The
 packages [timelib](https://github.com/peder2911/timelib) and
